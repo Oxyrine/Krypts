@@ -1,0 +1,7 @@
+.next/types/validator.ts(166,31): error TS2344: Type 'typeof import("C:/Documents/Hackathon/drm-platform/src/app/dashboard/layout")' does not satisfy the constraint 'LayoutConfig<"/dashboard">'.
+  Property 'default' is missing in type 'typeof import("C:/Documents/Hackathon/drm-platform/src/app/dashboard/layout")' but required in type 'LayoutConfig<"/dashboard">'.
+src/app/dashboard/analytics/page.tsx(4,79): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+src/app/dashboard/tokens/page.tsx(11,79): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+src/app/dashboard/upload/page.tsx(13,79): error TS2307: Cannot find module '@/components/ui/select' or its corresponding type declarations.
+src/app/dashboard/watermarks/page.tsx(11,24): error TS2307: Cannot find module '@/components/ui/slider' or its corresponding type declarations.
+src/app/dashboard/watermarks/page.tsx(12,44): error TS2307: Cannot find module '@/components/ui/radio-group' or its corresponding type declarations.

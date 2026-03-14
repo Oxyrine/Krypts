@@ -1,0 +1,80 @@
+src/app/dashboard/analytics/page.tsx(103,34): error TS1127: Invalid character.
+src/app/dashboard/analytics/page.tsx(103,52): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/analytics/page.tsx(103,95): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/dashboard/analytics/page.tsx(104,23): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/page.tsx(103,117): error TS1127: Invalid character.
+src/app/dashboard/page.tsx(103,130): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/page.tsx(103,133): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/dashboard/page.tsx(132,17): error TS2657: JSX expressions must have one parent element.
+src/app/dashboard/page.tsx(133,35): error TS1127: Invalid character.
+src/app/dashboard/page.tsx(136,22): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/page.tsx(136,23): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/dashboard/page.tsx(146,17): error TS1005: ')' expected.
+src/app/dashboard/page.tsx(147,17): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/page.tsx(148,15): error TS17002: Expected corresponding JSX closing tag for 'CardContent'.
+src/app/dashboard/page.tsx(149,13): error TS17002: Expected corresponding JSX closing tag for 'Card'.
+src/app/dashboard/page.tsx(150,11): error TS17002: Expected corresponding JSX closing tag for 'div'.
+src/app/dashboard/page.tsx(153,5): error TS1005: ')' expected.
+src/app/dashboard/page.tsx(154,3): error TS1109: Expression expected.
+src/app/dashboard/tokens/page.tsx(144,28): error TS1127: Invalid character.
+src/app/dashboard/tokens/page.tsx(144,109): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/tokens/page.tsx(144,110): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/dashboard/tokens/page.tsx(204,2): error TS1127: Invalid character.
+src/app/dashboard/tokens/page.tsx(207,3): error TS1109: Expression expected.
+src/app/dashboard/tokens/page.tsx(214,1): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/tokens/page.tsx(214,4): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/tokens/page.tsx(221,2): error TS1127: Invalid character.
+src/app/dashboard/tokens/page.tsx(225,10): error TS1005: '}' expected.
+src/app/dashboard/tokens/page.tsx(226,3): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/tokens/page.tsx(227,12): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/tokens/page.tsx(235,13): error TS17002: Expected corresponding JSX closing tag for 'div'.
+src/app/dashboard/tokens/page.tsx(238,5): error TS1005: ')' expected.
+src/app/dashboard/tokens/page.tsx(239,3): error TS1109: Expression expected.
+src/app/dashboard/watermarks/page.tsx(147,60): error TS1127: Invalid character.
+src/app/dashboard/watermarks/page.tsx(149,30): error TS1005: '}' expected.
+src/app/dashboard/watermarks/page.tsx(155,21): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/watermarks/page.tsx(157,30): error TS1005: '}' expected.
+src/app/dashboard/watermarks/page.tsx(165,21): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/watermarks/page.tsx(166,21): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/watermarks/page.tsx(166,22): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/dashboard/watermarks/page.tsx(166,25): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/view/pdf/page.tsx(82,52): error TS1127: Invalid character.
+src/app/view/pdf/page.tsx(84,22): error TS1005: '}' expected.
+src/app/view/pdf/page.tsx(90,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/pdf/page.tsx(92,22): error TS1005: '}' expected.
+src/app/view/pdf/page.tsx(100,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/pdf/page.tsx(101,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/pdf/page.tsx(101,14): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/pdf/page.tsx(101,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/view/video/page.tsx(65,52): error TS1127: Invalid character.
+src/app/view/video/page.tsx(67,22): error TS1005: '}' expected.
+src/app/view/video/page.tsx(73,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(75,22): error TS1005: '}' expected.
+src/app/view/video/page.tsx(84,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(86,46): error TS1005: ',' expected.
+src/app/view/video/page.tsx(87,15): error TS1005: '}' expected.
+src/app/view/video/page.tsx(87,31): error TS1005: '}' expected.
+src/app/view/video/page.tsx(87,56): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(88,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(89,13): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(89,14): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(89,17): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/view/video/page.tsx(123,22): error TS1127: Invalid character.
+src/app/view/video/page.tsx(123,214): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(124,9): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/view/video/page.tsx(130,31): error TS1127: Invalid character.
+src/app/view/video/page.tsx(130,49): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(130,50): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(131,13): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/view/video/page.tsx(134,30): error TS1127: Invalid character.
+src/app/view/video/page.tsx(134,60): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(134,61): error TS1381: Unexpected token. Did you mean `{'}'}` or `&rbrace;`?
+src/app/view/video/page.tsx(135,13): error TS1382: Unexpected token. Did you mean `{'>'}` or `&gt;`?
+src/app/view/video/page.tsx(140,11): error TS1005: ')' expected.
+src/app/view/video/page.tsx(173,9): error TS1128: Declaration or statement expected.
+src/app/view/video/page.tsx(175,7): error TS1109: Expression expected.
+src/app/view/video/page.tsx(178,12): error TS1005: ';' expected.
+src/app/view/video/page.tsx(179,9): error TS2657: JSX expressions must have one parent element.
+src/app/view/video/page.tsx(188,7): error TS1128: Declaration or statement expected.
+src/app/view/video/page.tsx(190,5): error TS1109: Expression expected.
+src/app/view/video/page.tsx(191,3): error TS1109: Expression expected.

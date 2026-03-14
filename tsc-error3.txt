@@ -1,0 +1,8 @@
+src/app/dashboard/watermarks/page.tsx(74,21): error TS2322: Type 'Dispatch<SetStateAction<number[]>>' is not assignable to type '(value: number | readonly number[], eventDetails: SliderRootChangeEventDetails) => void'.
+  Types of parameters 'value' and 'value' are incompatible.
+    Type 'number | readonly number[]' is not assignable to type 'SetStateAction<number[]>'.
+      Type 'number' is not assignable to type 'SetStateAction<number[]>'.
+src/app/dashboard/watermarks/page.tsx(88,21): error TS2322: Type 'Dispatch<SetStateAction<number[]>>' is not assignable to type '(value: number | readonly number[], eventDetails: SliderRootChangeEventDetails) => void'.
+  Types of parameters 'value' and 'value' are incompatible.
+    Type 'number | readonly number[]' is not assignable to type 'SetStateAction<number[]>'.
+      Type 'number' is not assignable to type 'SetStateAction<number[]>'.
