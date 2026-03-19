@@ -100,7 +100,7 @@ export default function AnalyticsPage() {
                     dataKey="value"
                   >
                     {contentData.map((entry, index) => (
-                      <Cell key={`cell-\${index}`} fill={entry.color} stroke="transparent" />
+                      <Cell key={`cell-${index}`} fill={entry.color} stroke="transparent" />
                     ))}
                   </Pie>
                   <Tooltip

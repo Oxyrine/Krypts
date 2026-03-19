@@ -1,57 +1,73 @@
 "use client"
 
-import { useEffect } from "react"
-import { ShieldAlert } from "lucide-react"
+import { useEffect, Suspense } from "react"
+import { useSearchParams } from "next/navigation"
+import { Shield, AlertTriangle } from "lucide-react"
+import { API_BASE } from "@/lib/api"
 
-export default function SecureImageViewer() {
-  
+function ImageViewerInner() {
+  const searchParams = useSearchParams()
+  const token = searchParams.get("token") || ""
+  const fileId = searchParams.get("file_id") || ""
+
   useEffect(() => {
-    // Disable right click and dragging
-    const preventAction = (e: Event) => e.preventDefault()
-    
-    document.addEventListener("contextmenu", preventAction)
-    document.addEventListener("dragstart", preventAction)
-    
+    const handleContextMenu = (e: MouseEvent) => e.preventDefault()
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.ctrlKey && (e.key === "s" || e.key === "c")) e.preventDefault()
+    }
+    document.addEventListener("contextmenu", handleContextMenu)
+    document.addEventListener("keydown", handleKeyDown)
     return () => {
-      document.removeEventListener("contextmenu", preventAction)
-      document.removeEventListener("dragstart", preventAction)
+      document.removeEventListener("contextmenu", handleContextMenu)
+      document.removeEventListener("keydown", handleKeyDown)
     }
   }, [])
 
+  if (!token || !fileId) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
+        <div className="flex flex-col items-center gap-3 text-center p-8 text-white">
+          <AlertTriangle className="h-10 w-10 text-destructive" />
+          <h2 className="text-xl font-semibold">Access Denied</h2>
+          <p className="text-zinc-400 text-sm">A valid content token and file ID are required.</p>
+        </div>
+      </div>
+    )
+  }
+
+  const imageUrl = `${API_BASE}/image/${fileId}?token=${token}`
+
   return (
-    <div className="h-screen w-full bg-[#0a0a0a] flex flex-col items-center justify-center relative overflow-hidden select-none">
-      
-      <div className="absolute top-6 left-6 z-20 bg-black/60 backdrop-blur border border-white/10 px-4 py-2 rounded-full flex items-center gap-2 text-sm text-white font-medium">
-        <ShieldAlert className="h-4 w-4 text-emerald-400" />
-        Image Guard Active
+    <div className="flex flex-col min-h-screen bg-zinc-950 select-none">
+      <div className="sticky top-0 z-10 flex items-center gap-2 px-4 h-12 bg-zinc-900 border-b border-zinc-800 text-white">
+        <Shield className="h-4 w-4 text-primary" />
+        <span className="text-sm text-zinc-300">Protected by Krypts DRM • Watermarked image</span>
       </div>
 
-      {/* Main Image Container */}
-      <div className="relative max-w-4xl max-h-[80vh] aspect-[4/3] w-full mx-8">
-        
-        {/* The actual image (simulated with CSS gradient for demo) */}
-        <div 
-          className="absolute inset-0 rounded border border-white/5 shadow-2xl z-0 overflow-hidden bg-gradient-to-tr from-purple-800 via-pink-700 to-orange-500"
-          style={{ backgroundImage: "linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111), linear-gradient(45deg, #111 25%, transparent 25%, transparent 75%, #111 75%, #111)", backgroundSize: "20px 20px", backgroundPosition: "0 0, 10px 10px" }}
-        >
-          {/* Abstract Image Details */}
-          <div className="w-full h-full flex flex-col items-center justify-center text-white/50 space-y-4 mix-blend-overlay">
-            <div className="w-64 h-64 border-4 border-white/30 rounded-full flex items-center justify-center">
-              <div className="w-32 h-32 bg-white/30 rounded-full blur-xl"></div>
-            </div>
-          </div>
-        </div>
-
-        {/* Glassmorphism Watermark Overlay - directly over image */}
-        <div className="absolute inset-0 z-10 pointer-events-none flex items-center justify-center overflow-hidden mix-blend-overlay opacity-60">
-          <div className="transform -rotate-45 text-white/90 font-black text-6xl tracking-widest leading-loose text-center">
-            PROPRIETARY<br/>
-            <span className="text-3xl font-mono opacity-80">user_session_9438</span><br/>
-            DO NOT SHARE
-          </div>
+      <div className="flex-1 flex items-center justify-center p-8">
+        <div className="max-w-4xl w-full">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={imageUrl}
+            alt="Protected content"
+            className="w-full rounded-xl shadow-2xl"
+            draggable={false}
+            onContextMenu={(e) => e.preventDefault()}
+            onDragStart={(e) => e.preventDefault()}
+          />
+          <p className="text-center text-xs text-zinc-500 mt-3">
+            This image is watermarked and tracked. Unauthorized redistribution is prohibited.
+          </p>
         </div>
       </div>
-
     </div>
+  )
+}
+
+export default function SecureImageViewer() {
+  return (
+    <Suspense fallback={<div className="flex min-h-screen items-center justify-center bg-zinc-950 text-white">Loading viewer...</div>}>
+      <ImageViewerInner />
+    </Suspense>
   )
 }

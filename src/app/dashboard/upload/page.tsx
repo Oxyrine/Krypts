@@ -2,51 +2,79 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import { UploadCloud, File, X, CheckCircle2, AlertCircle } from "lucide-react"
+import { UploadCloud, File as FileIcon, X, CheckCircle2, AlertCircle, Copy } from "lucide-react"
+import { toast } from "sonner"
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Badge } from "@/components/ui/badge"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { api } from "@/lib/api"
+import { API_BASE } from "@/lib/api"
 
 export default function UploadPage() {
   const [file, setFile] = useState<File | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [uploadStatus, setUploadStatus] = useState<"idle" | "uploading" | "encrypting" | "success" | "error">("idle")
+  const [fileId, setFileId] = useState<string | null>(null)
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault()
     if (e.dataTransfer.files && e.dataTransfer.files[0]) {
       setFile(e.dataTransfer.files[0])
+      setUploadStatus("idle")
+      setFileId(null)
     }
   }
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (!file) return
 
     setIsUploading(true)
     setUploadStatus("uploading")
+    setProgress(20)
 
-    // Simulate upload and encryption process
-    let currentProgress = 0
-    const interval = setInterval(() => {
-      currentProgress += 5
-      setProgress(currentProgress)
+    const formData = new FormData()
+    formData.append("file", file)
 
-      if (currentProgress >= 60 && currentProgress < 99) {
-        setUploadStatus("encrypting")
+    try {
+      setProgress(50)
+      setUploadStatus("encrypting")
+
+      const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null
+      const res = await fetch(`${API_BASE}/upload`, {
+        method: "POST",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+        body: formData,
+      })
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({ detail: "Upload failed" }))
+        throw new Error(err.detail || "Upload failed")
       }
 
-      if (currentProgress >= 100) {
-        clearInterval(interval)
-        setUploadStatus("success")
-        setIsUploading(false)
-      }
-    }, 200)
+      const data = await res.json()
+      setProgress(100)
+      setUploadStatus("success")
+      setFileId(data.id)
+      toast.success("File encrypted and stored successfully!")
+    } catch (err: any) {
+      setUploadStatus("error")
+      toast.error(err.message || "Upload failed")
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleReset = () => {
+    setFile(null)
+    setUploadStatus("idle")
+    setProgress(0)
+    setFileId(null)
   }
 
   return (
@@ -54,12 +82,11 @@ export default function UploadPage() {
       <div className="mb-8">
         <h1 className="text-2xl font-bold tracking-tight">Upload Content</h1>
         <p className="text-muted-foreground">
-          Upload videos, PDFs, or images. Files are automatically encrypted before storage.
+          Upload videos, PDFs, or images. Files are automatically AES-256 encrypted before storage.
         </p>
       </div>
 
       <div className="grid md:grid-cols-3 gap-6">
-
         {/* Upload Area */}
         <div className="md:col-span-2 space-y-6">
           <Card>
@@ -74,15 +101,21 @@ export default function UploadPage() {
                   <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 mb-4">
                     <UploadCloud className="h-8 w-8 text-primary" />
                   </div>
-                  <h3 className="text-lg font-semibold">Click or drag file to this area to upload</h3>
+                  <h3 className="text-lg font-semibold">Click or drag file to upload</h3>
                   <p className="text-sm text-muted-foreground mt-2 mb-6">
-                    Support for single upload. Strictly prohibited from uploading company data or other band files.
+                    Videos, PDFs, and images are automatically protected with AES-256 encryption.
                   </p>
                   <Input
                     id="file-upload"
                     type="file"
                     className="hidden"
-                    onChange={(e) => e.target.files && setFile(e.target.files[0])}
+                    onChange={(e) => {
+                      if (e.target.files) {
+                        setFile(e.target.files[0])
+                        setUploadStatus("idle")
+                        setFileId(null)
+                      }
+                    }}
                     accept="video/*,application/pdf,image/*"
                   />
                   <div className="flex justify-center gap-2">
@@ -97,7 +130,7 @@ export default function UploadPage() {
                   <div className="flex items-start justify-between mb-6">
                     <div className="flex items-center gap-4">
                       <div className="h-12 w-12 rounded-lg bg-primary/10 flex items-center justify-center">
-                        <File className="h-6 w-6 text-primary" />
+                        <FileIcon className="h-6 w-6 text-primary" />
                       </div>
                       <div>
                         <h4 className="font-semibold text-sm truncate max-w-xs">{file.name}</h4>
@@ -105,7 +138,7 @@ export default function UploadPage() {
                       </div>
                     </div>
                     {uploadStatus === "idle" && (
-                      <Button variant="ghost" size="icon" onClick={() => setFile(null)}>
+                      <Button variant="ghost" size="icon" onClick={handleReset}>
                         <X className="h-4 w-4" />
                       </Button>
                     )}
@@ -117,8 +150,16 @@ export default function UploadPage() {
                         <span className="font-medium">
                           {uploadStatus === "uploading" && "Uploading to secure vault..."}
                           {uploadStatus === "encrypting" && "Applying AES-256 encryption..."}
-                          {uploadStatus === "success" && <span className="text-green-500 flex items-center gap-1"><CheckCircle2 className="h-4 w-4" /> Upload complete</span>}
-                          {uploadStatus === "error" && <span className="text-red-500 flex items-center gap-1"><AlertCircle className="h-4 w-4" /> Upload failed</span>}
+                          {uploadStatus === "success" && (
+                            <span className="text-green-500 flex items-center gap-1">
+                              <CheckCircle2 className="h-4 w-4" /> Upload complete
+                            </span>
+                          )}
+                          {uploadStatus === "error" && (
+                            <span className="text-red-500 flex items-center gap-1">
+                              <AlertCircle className="h-4 w-4" /> Upload failed
+                            </span>
+                          )}
                         </span>
                         <span>{progress}%</span>
                       </div>
@@ -128,20 +169,41 @@ export default function UploadPage() {
 
                   {uploadStatus === "idle" && (
                     <div className="flex justify-end gap-3 mt-4">
-                      <Button variant="outline" onClick={() => setFile(null)}>Cancel</Button>
-                      <Button onClick={handleUpload}>Start Upload</Button>
+                      <Button variant="outline" onClick={handleReset}>Cancel</Button>
+                      <Button onClick={handleUpload} disabled={isUploading}>Start Upload</Button>
                     </div>
                   )}
 
-                  {uploadStatus === "success" && (
+                  {uploadStatus === "success" && fileId && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
-                      className="mt-6 bg-muted p-4 rounded-lg flex items-center justify-between"
+                      className="mt-6 space-y-3"
                     >
-                      <div className="text-sm font-mono">File ID: file_8f7b3...</div>
-                      <Button size="sm" variant="secondary">Copy ID</Button>
+                      <div className="bg-muted p-4 rounded-lg flex items-center justify-between">
+                        <div className="text-sm font-mono truncate mr-2">File ID: {fileId}</div>
+                        <Button
+                          size="sm"
+                          variant="secondary"
+                          onClick={() => {
+                            navigator.clipboard.writeText(fileId)
+                            toast.success("File ID copied!")
+                          }}
+                        >
+                          <Copy className="h-3 w-3 mr-1" />
+                          Copy
+                        </Button>
+                      </div>
+                      <Button variant="outline" className="w-full" onClick={handleReset}>
+                        Upload Another File
+                      </Button>
                     </motion.div>
+                  )}
+
+                  {uploadStatus === "error" && (
+                    <Button variant="outline" className="mt-4 w-full" onClick={() => setUploadStatus("idle")}>
+                      Try Again
+                    </Button>
                   )}
                 </div>
               )}
@@ -154,7 +216,7 @@ export default function UploadPage() {
           <Card className={!file ? "opacity-50 pointer-events-none" : ""}>
             <CardHeader>
               <CardTitle className="text-sm">Protection Settings</CardTitle>
-              <CardDescription>Default DRM configuration rules for this file.</CardDescription>
+              <CardDescription>DRM configuration for this file.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-2">
@@ -185,15 +247,12 @@ export default function UploadPage() {
               </div>
 
               <div className="pt-4 mt-2 border-t text-xs text-muted-foreground leading-relaxed">
-                These settings can be overridden on a per-token basis when issuing access via the API.
+                These settings can be overridden per-token when issuing access via the API.
               </div>
             </CardContent>
           </Card>
         </div>
       </div>
     </div>
-  )
-}
-    </div >
   )
 }
