@@ -73,7 +73,7 @@ export default function TokensPage() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label>Select File</Label>
-            <Select value={selectedFileId} onValueChange={setSelectedFileId}>
+            <Select value={selectedFileId} onValueChange={(v) => v && setSelectedFileId(v)}>
               <SelectTrigger>
                 <SelectValue placeholder="Choose a protected file..." />
               </SelectTrigger>
@@ -92,7 +92,7 @@ export default function TokensPage() {
 
           <div className="space-y-2">
             <Label>Expiration</Label>
-            <Select value={expiresIn} onValueChange={setExpiresIn}>
+            <Select value={expiresIn} onValueChange={(v) => v && setExpiresIn(v)}>
               <SelectTrigger>
                 <SelectValue />
               </SelectTrigger>

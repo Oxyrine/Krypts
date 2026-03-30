@@ -178,6 +178,23 @@ async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends
 
 
 # ---------------------------------------------------------------------------
+# POST /auth/logout
+# ---------------------------------------------------------------------------
+
+@router.post("/logout", status_code=status.HTTP_200_OK)
+async def logout(request: Request, current_user=Depends(get_current_user), db: AsyncSession = Depends(get_db)):
+    log = UserActivityLog(
+        user_id=current_user.user_id,
+        event_type=EventType.logout,
+        ip_address=request.client.host if request.client else None,
+        device_info=request.headers.get("user-agent"),
+    )
+    db.add(log)
+    await db.commit()
+    return {"detail": "Logged out successfully."}
+
+
+# ---------------------------------------------------------------------------
 # GET /auth/me
 # ---------------------------------------------------------------------------
 

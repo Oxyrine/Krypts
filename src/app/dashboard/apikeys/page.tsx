@@ -113,7 +113,7 @@ export default function ApiKeysPage() {
                 </div>
                 <div className="space-y-2">
                   <Label>Environment</Label>
-                  <Select value={environment} onValueChange={setEnvironment}>
+                  <Select value={environment} onValueChange={(v) => v && setEnvironment(v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
                       <SelectItem value="live">Live</SelectItem>

@@ -1,25 +1,80 @@
 "use client"
 
-import { useEffect, Suspense } from "react"
+import { useEffect, useState, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { Shield, AlertTriangle } from "lucide-react"
-import { API_BASE } from "@/lib/api"
+import { API_BASE, api } from "@/lib/api"
+
+function FloatingWatermark({ email }: { email: string }) {
+  const [positions, setPositions] = useState<{ top: number; left: number }[]>([])
+
+  const generatePositions = useCallback(() => {
+    const count = 4
+    return Array.from({ length: count }, () => ({
+      top: 10 + Math.random() * 70,
+      left: 5 + Math.random() * 75,
+    }))
+  }, [])
+
+  useEffect(() => {
+    setPositions(generatePositions())
+    const interval = setInterval(() => setPositions(generatePositions()), 3000)
+    return () => clearInterval(interval)
+  }, [generatePositions])
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+      {positions.map((pos, i) => (
+        <span
+          key={i}
+          className="absolute text-white/15 font-mono text-sm whitespace-nowrap select-none"
+          style={{
+            top: `${pos.top}%`,
+            left: `${pos.left}%`,
+            transform: `rotate(-${20 + i * 5}deg)`,
+            transition: "top 2s ease-in-out, left 2s ease-in-out",
+          }}
+        >
+          {email} • Krypts DRM
+        </span>
+      ))}
+    </div>
+  )
+}
 
 function VideoViewerInner() {
   const searchParams = useSearchParams()
   const token = searchParams.get("token") || ""
   const fileId = searchParams.get("file_id") || ""
+  const [userEmail, setUserEmail] = useState<string>("")
+
+  useEffect(() => {
+    api.auth.me().then((u) => setUserEmail(u.email)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => e.preventDefault()
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.ctrlKey && (e.key === "s" || e.key === "u")) e.preventDefault()
+      if (e.key === "PrintScreen") {
+        e.preventDefault()
+        document.body.style.display = "none"
+        setTimeout(() => { document.body.style.display = "" }, 100)
+      }
+    }
+    const handleVisibility = () => {
+      const video = document.querySelector("video")
+      if (document.visibilityState === "hidden" && video && !video.paused) {
+        video.pause()
+      }
     }
     document.addEventListener("contextmenu", handleContextMenu)
     document.addEventListener("keydown", handleKeyDown)
+    document.addEventListener("visibilitychange", handleVisibility)
     return () => {
       document.removeEventListener("contextmenu", handleContextMenu)
       document.removeEventListener("keydown", handleKeyDown)
+      document.removeEventListener("visibilitychange", handleVisibility)
     }
   }, [])
 
@@ -38,14 +93,20 @@ function VideoViewerInner() {
   const videoUrl = `${API_BASE}/stream/video/${fileId}?token=${token}`
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 select-none">
+    <div
+      className="drm-protected flex flex-col min-h-screen bg-zinc-950 select-none"
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+      onDragStart={(e) => e.preventDefault()}
+    >
       <div className="sticky top-0 z-10 flex items-center gap-2 px-4 h-12 bg-zinc-900 border-b border-zinc-800 text-white">
         <Shield className="h-4 w-4 text-primary" />
         <span className="text-sm text-zinc-300">Protected by Krypts DRM • Streaming encrypted content</span>
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="w-full max-w-4xl">
+        <div className="relative w-full max-w-4xl">
+          {userEmail && <FloatingWatermark email={userEmail} />}
           <video
             src={videoUrl}
             controls

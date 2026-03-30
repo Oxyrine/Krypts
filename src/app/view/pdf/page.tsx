@@ -60,8 +60,10 @@ function PdfViewerInner() {
 
   return (
     <div
-      className="flex flex-col min-h-screen bg-zinc-900 select-none"
+      className="drm-protected flex flex-col min-h-screen bg-zinc-900 select-none"
       onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+      onDragStart={(e) => e.preventDefault()}
     >
       {/* Header toolbar */}
       <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-12 bg-zinc-800 border-b border-zinc-700 text-white">

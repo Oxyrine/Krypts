@@ -186,6 +186,9 @@ export const api = {
       }),
 
     me: () => apiFetch<UserResponse>("/auth/me"),
+
+    logout: () =>
+      apiFetch<{ detail: string }>("/auth/logout", { method: "POST" }),
   },
 
   files: {

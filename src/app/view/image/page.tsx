@@ -38,7 +38,12 @@ function ImageViewerInner() {
   const imageUrl = `${API_BASE}/image/${fileId}?token=${token}`
 
   return (
-    <div className="flex flex-col min-h-screen bg-zinc-950 select-none">
+    <div
+      className="drm-protected flex flex-col min-h-screen bg-zinc-950 select-none"
+      onCopy={(e) => e.preventDefault()}
+      onCut={(e) => e.preventDefault()}
+      onDragStart={(e) => e.preventDefault()}
+    >
       <div className="sticky top-0 z-10 flex items-center gap-2 px-4 h-12 bg-zinc-900 border-b border-zinc-800 text-white">
         <Shield className="h-4 w-4 text-primary" />
         <span className="text-sm text-zinc-300">Protected by Krypts DRM • Watermarked image</span>
