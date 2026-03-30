@@ -14,37 +14,39 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserResponse | null>(() => {
-    if (typeof window === "undefined") return null;
+  const [user, setUser] = useState<UserResponse | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Restore session on mount — show cached user instantly, validate in background
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) {
+      setIsLoading(false);
+      return;
+    }
+
+    // Show cached user immediately to avoid loading spinner
     try {
       const cached = localStorage.getItem("cached_user");
-      return cached ? JSON.parse(cached) : null;
-    } catch { return null; }
-  });
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof window === "undefined") return true;
-    return !!localStorage.getItem("access_token") && !localStorage.getItem("cached_user");
-  });
+      if (cached) {
+        setUser(JSON.parse(cached));
+        setIsLoading(false);
+      }
+    } catch { /* ignore corrupt cache */ }
 
-  // Restore session on mount — validate token in background
-  useEffect(() => {
-    const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
-    if (token) {
-      api.auth
-        .me()
-        .then((u) => {
-          setUser(u);
-          localStorage.setItem("cached_user", JSON.stringify(u));
-        })
-        .catch(() => {
-          localStorage.removeItem("access_token");
-          localStorage.removeItem("cached_user");
-          setUser(null);
-        })
-        .finally(() => setIsLoading(false));
-    } else {
-      setIsLoading(false);
-    }
+    // Validate token in background
+    api.auth
+      .me()
+      .then((u) => {
+        setUser(u);
+        localStorage.setItem("cached_user", JSON.stringify(u));
+      })
+      .catch(() => {
+        localStorage.removeItem("access_token");
+        localStorage.removeItem("cached_user");
+        setUser(null);
+      })
+      .finally(() => setIsLoading(false));
   }, []);
 
   const login = useCallback(async (email: string, password: string) => {
