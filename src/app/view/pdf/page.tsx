@@ -1,10 +1,73 @@
 "use client"
 
-import { useEffect, useState, Suspense } from "react"
+import { useEffect, useState, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Shield, AlertTriangle } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { API_BASE } from "@/lib/api"
+import { API_BASE, api } from "@/lib/api"
+
+const STORAGE_KEY = "krypts_watermark_settings"
+
+function getWatermarkSettings() {
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    if (stored) return JSON.parse(stored)
+  } catch { /* ignore */ }
+  return { enabled: true, text: "Confidential - {user_id}", opacity: [15], density: [3], colorScheme: "dark" }
+}
+
+function FloatingWatermark({ email }: { email: string }) {
+  const [positions, setPositions] = useState<{ top: number; left: number }[]>([])
+  const [settings, setSettings] = useState(getWatermarkSettings)
+
+  useEffect(() => { setSettings(getWatermarkSettings()) }, [])
+
+  const count = Math.max(2, settings.density[0] * 2)
+  const opacityValue = settings.opacity[0] / 100
+
+  const generatePositions = useCallback(() => {
+    return Array.from({ length: count }, () => ({
+      top: 5 + Math.random() * 80,
+      left: 5 + Math.random() * 75,
+    }))
+  }, [count])
+
+  useEffect(() => {
+    setPositions(generatePositions())
+    const interval = setInterval(() => setPositions(generatePositions()), 3000)
+    return () => clearInterval(interval)
+  }, [generatePositions])
+
+  if (!settings.enabled) return null
+
+  const displayText = settings.text
+    .replace("{user_id}", email.split("@")[0])
+    .replace("{email}", email)
+    .replace("{ip_address}", "")
+    .replace("{timestamp}", new Date().toISOString().split("T")[0])
+
+  const textColor = settings.colorScheme === "dark" ? "0,0,0" : "255,255,255"
+
+  return (
+    <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
+      {positions.map((pos, i) => (
+        <span
+          key={i}
+          className="absolute font-mono font-bold text-sm whitespace-nowrap select-none"
+          style={{
+            top: `${pos.top}%`,
+            left: `${pos.left}%`,
+            transform: `rotate(-${20 + i * 5}deg)`,
+            transition: "top 2s ease-in-out, left 2s ease-in-out",
+            color: `rgba(${textColor}, ${opacityValue})`,
+          }}
+        >
+          {displayText} • Krypts DRM
+        </span>
+      ))}
+    </div>
+  )
+}
 
 function PdfViewerInner() {
   const searchParams = useSearchParams()
@@ -16,6 +79,11 @@ function PdfViewerInner() {
   const [zoom, setZoom] = useState(100)
   const [failedPages, setFailedPages] = useState<Set<number>>(new Set())
   const [validToken, setValidToken] = useState(!!token && !!fileId)
+  const [userEmail, setUserEmail] = useState("")
+
+  useEffect(() => {
+    api.auth.me().then((u) => setUserEmail(u.email)).catch(() => {})
+  }, [])
 
   useEffect(() => {
     if (!token || !fileId) setValidToken(false)
@@ -93,7 +161,8 @@ function PdfViewerInner() {
 
       {/* PDF page display */}
       <div className="flex-1 flex items-start justify-center p-6 overflow-auto">
-        <div style={{ width: `${zoom}%`, maxWidth: 900 }}>
+        <div className="relative" style={{ width: `${zoom}%`, maxWidth: 900 }}>
+          {userEmail && <FloatingWatermark email={userEmail} />}
           <object
             data={pageUrl}
             type="application/pdf"
