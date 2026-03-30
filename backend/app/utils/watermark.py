@@ -80,18 +80,19 @@ def watermark_pdf_page(
     wm_buf = io.BytesIO()
     c = rl_canvas.Canvas(wm_buf, pagesize=(page_width, page_height))
 
-    # Semi-transparent gray text
-    c.setFillColor(Color(0.6, 0.6, 0.6, alpha=0.3))
-    c.setFont("Helvetica", max(12, int(page_width / 30)))
+    # Bold, visible watermark text — dark red with higher opacity
+    c.setFillColor(Color(0.8, 0.1, 0.1, alpha=0.35))
+    font_size = max(18, int(page_width / 18))
+    c.setFont("Helvetica-Bold", font_size)
 
-    # Diagonal repeating pattern
+    # Diagonal repeating pattern — denser grid
     c.saveState()
     c.translate(page_width / 2, page_height / 2)
     c.rotate(30)
-    step_x = max(180, page_width // 3)
-    step_y = max(60, page_height // 8)
-    for xi in range(-3, 4):
-        for yi in range(-6, 7):
+    step_x = max(250, page_width // 2)
+    step_y = max(80, page_height // 6)
+    for xi in range(-4, 5):
+        for yi in range(-8, 9):
             c.drawCentredString(xi * step_x, yi * step_y, watermark_text)
     c.restoreState()
     c.save()
