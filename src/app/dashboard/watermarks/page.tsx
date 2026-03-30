@@ -1,7 +1,8 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Eye, Settings2, Palette, Type } from "lucide-react"
+import { toast } from "sonner"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
@@ -11,10 +12,58 @@ import { Switch } from "@/components/ui/switch"
 import { Slider } from "@/components/ui/slider"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
+const STORAGE_KEY = "krypts_watermark_settings"
+
+interface WatermarkSettings {
+  enabled: boolean
+  text: string
+  opacity: number[]
+  density: number[]
+  colorScheme: string
+}
+
+const defaults: WatermarkSettings = {
+  enabled: true,
+  text: "Confidential - {user_id}",
+  opacity: [15],
+  density: [3],
+  colorScheme: "light",
+}
+
+function loadSettings(): WatermarkSettings {
+  if (typeof window === "undefined") return defaults
+  try {
+    const stored = localStorage.getItem(STORAGE_KEY)
+    return stored ? { ...defaults, ...JSON.parse(stored) } : defaults
+  } catch { return defaults }
+}
+
 export default function WatermarkSettingsPage() {
-  const [opacity, setOpacity] = useState([15])
-  const [density, setDensity] = useState([3])
-  const [text, setText] = useState("Confidential - {user_id}")
+  const [enabled, setEnabled] = useState(defaults.enabled)
+  const [opacity, setOpacity] = useState(defaults.opacity)
+  const [density, setDensity] = useState(defaults.density)
+  const [text, setText] = useState(defaults.text)
+  const [colorScheme, setColorScheme] = useState(defaults.colorScheme)
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    const s = loadSettings()
+    setEnabled(s.enabled)
+    setOpacity(s.opacity)
+    setDensity(s.density)
+    setText(s.text)
+    setColorScheme(s.colorScheme)
+  }, [])
+
+  const handleSave = () => {
+    setSaving(true)
+    const settings: WatermarkSettings = { enabled, text, opacity, density, colorScheme }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(settings))
+    setTimeout(() => {
+      setSaving(false)
+      toast.success("Watermark configuration saved successfully.")
+    }, 400)
+  }
   
   return (
     <div className="space-y-6 max-w-6xl mx-auto">
@@ -42,7 +91,7 @@ export default function WatermarkSettingsPage() {
                     <Label className="text-base font-medium">Enable Global Watermarking</Label>
                     <p className="text-sm text-muted-foreground">Force watermarks on all content viewers.</p>
                   </div>
-                  <Switch defaultChecked />
+                  <Switch checked={enabled} onCheckedChange={setEnabled} />
                 </div>
               </div>
 
@@ -96,7 +145,7 @@ export default function WatermarkSettingsPage() {
 
                 <div className="space-y-3">
                   <Label>Color Scheme</Label>
-                  <RadioGroup defaultValue="light" className="flex gap-4">
+                  <RadioGroup value={colorScheme} onValueChange={(v) => v && setColorScheme(v)} className="flex gap-4">
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="light" id="r1" />
                       <Label htmlFor="r1" className="text-slate-200 bg-slate-800 px-3 py-1 rounded">Light</Label>
@@ -115,7 +164,9 @@ export default function WatermarkSettingsPage() {
 
             </CardContent>
             <CardFooter className="bg-muted/50 border-t py-4">
-              <Button className="w-full">Save Configuration</Button>
+              <Button className="w-full" onClick={handleSave} disabled={saving}>
+                {saving ? "Saving..." : "Save Configuration"}
+              </Button>
             </CardFooter>
           </Card>
         </div>
