@@ -32,7 +32,7 @@ export function HeroSection() {
             Protect your digital content from piracy and unauthorized sharing. Secure videos, PDFs, images, and API data with enterprise-grade encryption in minutes.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Link href="/dashboard" className={buttonVariants({ variant: "default", size: "lg", className: "h-12 px-8 w-full sm:w-auto" })}>
+            <Link href="/signup" className={buttonVariants({ variant: "default", size: "lg", className: "h-12 px-8 w-full sm:w-auto" })}>
               Start Free <ArrowRight className="ml-2 h-4 w-4" />
             </Link>
             <Link href="/docs" className={buttonVariants({ variant: "outline", size: "lg", className: "h-12 px-8 w-full sm:w-auto bg-background/50 backdrop-blur-sm" })}>

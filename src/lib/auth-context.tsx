@@ -14,18 +14,32 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<UserResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [user, setUser] = useState<UserResponse | null>(() => {
+    if (typeof window === "undefined") return null;
+    try {
+      const cached = localStorage.getItem("cached_user");
+      return cached ? JSON.parse(cached) : null;
+    } catch { return null; }
+  });
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof window === "undefined") return true;
+    return !!localStorage.getItem("access_token") && !localStorage.getItem("cached_user");
+  });
 
-  // Restore session on mount
+  // Restore session on mount — validate token in background
   useEffect(() => {
     const token = typeof window !== "undefined" ? localStorage.getItem("access_token") : null;
     if (token) {
       api.auth
         .me()
-        .then(setUser)
+        .then((u) => {
+          setUser(u);
+          localStorage.setItem("cached_user", JSON.stringify(u));
+        })
         .catch(() => {
           localStorage.removeItem("access_token");
+          localStorage.removeItem("cached_user");
+          setUser(null);
         })
         .finally(() => setIsLoading(false));
     } else {
@@ -37,6 +51,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const resp = await api.auth.login(email, password);
     localStorage.setItem("access_token", resp.access_token);
     const me = await api.auth.me();
+    localStorage.setItem("cached_user", JSON.stringify(me));
     setUser(me);
   }, []);
 
@@ -45,6 +60,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const resp = await api.auth.signup(email, password, fullName);
       localStorage.setItem("access_token", resp.access_token);
       const me = await api.auth.me();
+      localStorage.setItem("cached_user", JSON.stringify(me));
       setUser(me);
     },
     []
@@ -53,6 +69,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = useCallback(() => {
     api.auth.logout().catch(() => {});
     localStorage.removeItem("access_token");
+    localStorage.removeItem("cached_user");
     setUser(null);
   }, []);
 

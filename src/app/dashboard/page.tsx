@@ -1,10 +1,37 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, lazy, Suspense } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Activity, ShieldCheck, Film, FileText, ArrowUpRight, Users, AlertTriangle } from "lucide-react"
-import { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
+import { Activity, ShieldCheck, Film, Users, AlertTriangle } from "lucide-react"
 import { api, UsageAnalytics, SecurityEventItem } from "@/lib/api"
+
+const LazyChart = lazy(() => import("recharts").then(m => {
+  const { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } = m
+  return { default: ({ data }: { data: typeof import("recharts") extends any ? any : never }) => (
+    <ResponsiveContainer width="100%" height="100%">
+      <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+        <defs>
+          <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
+          </linearGradient>
+          <linearGradient id="colorBlocked" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
+            <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
+          </linearGradient>
+        </defs>
+        <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
+        <Tooltip
+          contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
+          itemStyle={{ color: 'hsl(var(--foreground))' }}
+        />
+        <Area type="monotone" dataKey="sessions" stroke="#3b82f6" fillOpacity={1} fill="url(#colorSessions)" />
+        <Area type="monotone" dataKey="blocked" stroke="#ef4444" fillOpacity={1} fill="url(#colorBlocked)" />
+      </AreaChart>
+    </ResponsiveContainer>
+  )}
+}))
 
 const fallbackChartData = [
   { name: "Mon", sessions: 0, blocked: 0 },
@@ -22,13 +49,8 @@ export default function DashboardOverview() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    Promise.all([
-      api.analytics.usage().catch(() => null),
-      api.analytics.securityEvents(5).catch(() => []),
-    ]).then(([usage, events]) => {
-      setAnalytics(usage)
-      setSecurityEvents(events as SecurityEventItem[])
-    }).finally(() => setLoading(false))
+    api.analytics.usage().then(setAnalytics).catch(() => {}).finally(() => setLoading(false))
+    api.analytics.securityEvents(5).then(e => setSecurityEvents(e as SecurityEventItem[])).catch(() => {})
   }, [])
 
   const stats = [
@@ -93,28 +115,9 @@ export default function DashboardOverview() {
           </CardHeader>
           <CardContent className="pl-0 pb-4 pr-4 border-t pt-4">
             <div className="h-[300px] w-full mt-4">
-              <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={fallbackChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorSessions" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#3b82f6" stopOpacity={0} />
-                    </linearGradient>
-                    <linearGradient id="colorBlocked" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#ef4444" stopOpacity={0.3} />
-                      <stop offset="95%" stopColor="#ef4444" stopOpacity={0} />
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="name" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                  <Tooltip
-                    contentStyle={{ backgroundColor: 'hsl(var(--card))', borderRadius: '8px', border: '1px solid hsl(var(--border))' }}
-                    itemStyle={{ color: 'hsl(var(--foreground))' }}
-                  />
-                  <Area type="monotone" dataKey="sessions" stroke="#3b82f6" fillOpacity={1} fill="url(#colorSessions)" />
-                  <Area type="monotone" dataKey="blocked" stroke="#ef4444" fillOpacity={1} fill="url(#colorBlocked)" />
-                </AreaChart>
-              </ResponsiveContainer>
+              <Suspense fallback={<div className="h-full w-full animate-pulse rounded bg-muted" />}>
+                <LazyChart data={fallbackChartData} />
+              </Suspense>
             </div>
           </CardContent>
         </Card>

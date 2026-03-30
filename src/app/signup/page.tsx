@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, lazy, Suspense } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+
+const ShaderAnimation = lazy(() => import("@/components/ui/shader-animation").then(m => ({ default: m.ShaderAnimation })));
 
 export default function SignupPage() {
   const [fullName, setFullName] = useState("");
@@ -43,21 +45,29 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-background p-4">
-      <div className="w-full max-w-md space-y-6">
+    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
+      {/* Shader background — lazy loaded so form appears instantly */}
+      <div className="absolute inset-0 z-0">
+        <Suspense fallback={<div className="h-full w-full bg-zinc-950" />}>
+          <ShaderAnimation />
+        </Suspense>
+      </div>
+      <div className="absolute inset-0 z-0 bg-black/40" />
+
+      <div className="relative z-10 w-full max-w-md space-y-6">
         {/* Logo */}
         <div className="flex flex-col items-center gap-2 text-center">
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-primary">
-            <Shield className="h-6 w-6 text-primary-foreground" />
+          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white/20 backdrop-blur-sm">
+            <Shield className="h-6 w-6 text-white" />
           </div>
-          <h1 className="text-2xl font-bold tracking-tight">Krypts DRM</h1>
-          <p className="text-sm text-muted-foreground">Create your account</p>
+          <h1 className="text-2xl font-bold tracking-tight text-white">Krypts DRM</h1>
+          <p className="text-sm text-gray-300">Create your account</p>
         </div>
 
-        <Card>
+        <Card className="border-white/10 bg-white/5 backdrop-blur-xl">
           <CardHeader className="space-y-1 pb-4">
-            <CardTitle className="text-xl">Get started for free</CardTitle>
-            <CardDescription>Protect your digital content in minutes</CardDescription>
+            <CardTitle className="text-xl text-white">Get started for free</CardTitle>
+            <CardDescription className="text-gray-400">Protect your digital content in minutes</CardDescription>
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-4">
@@ -134,7 +144,7 @@ export default function SignupPage() {
           </CardContent>
         </Card>
 
-        <p className="text-center text-xs text-muted-foreground">
+        <p className="text-center text-xs text-gray-400">
           By signing up you agree to our Terms of Service • AES-256 Encrypted
         </p>
       </div>
