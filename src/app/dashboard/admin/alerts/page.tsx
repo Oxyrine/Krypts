@@ -1,7 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
-import { useSearchParams } from "next/navigation"
+import useSWR from "swr"
+import { useState } from "react"
 import Link from "next/link"
 import { Bell, CheckCircle2, AlertTriangle, ShieldX, RefreshCw, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
@@ -27,25 +27,20 @@ const AlertTypeBadge = ({ type }: { type: string }) => {
 }
 
 export default function AlertsPage() {
-  const [alerts, setAlerts] = useState<SecurityAlertResponse[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: alerts = [], isLoading, mutate } = useSWR<SecurityAlertResponse[]>(
+    'admin/alerts',
+    api.admin.securityAlerts
+  )
   const [markingId, setMarkingId] = useState<string | null>(null)
-
-  const loadAlerts = () => {
-    setLoading(true)
-    api.admin.securityAlerts()
-      .then(setAlerts)
-      .catch((err) => toast.error(err.message || "Failed to load alerts"))
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => { loadAlerts() }, [])
 
   const handleMarkRead = async (alertId: string) => {
     setMarkingId(alertId)
     try {
       await api.admin.markAlertRead(alertId)
-      setAlerts(prev => prev.map(a => a.alert_id === alertId ? { ...a, status: "read" } : a))
+      mutate(
+        alerts.map(a => a.alert_id === alertId ? { ...a, status: "read" } : a),
+        { revalidate: false }
+      )
     } catch (err: any) {
       toast.error(err.message || "Failed to update alert")
     } finally {
@@ -55,10 +50,8 @@ export default function AlertsPage() {
 
   const handleMarkAllRead = async () => {
     const unread = alerts.filter(a => a.status === "unread")
-    for (const alert of unread) {
-      await api.admin.markAlertRead(alert.alert_id).catch(() => {})
-    }
-    setAlerts(prev => prev.map(a => ({ ...a, status: "read" })))
+    await Promise.all(unread.map(a => api.admin.markAlertRead(a.alert_id).catch(() => {})))
+    mutate(alerts.map(a => ({ ...a, status: "read" })), { revalidate: false })
     toast.success(`Marked ${unread.length} alerts as read.`)
   }
 
@@ -82,7 +75,7 @@ export default function AlertsPage() {
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={loadAlerts}>
+          <Button variant="outline" size="sm" onClick={() => mutate()}>
             <RefreshCw className="mr-2 h-4 w-4" />Refresh
           </Button>
           {unreadCount > 0 && (
@@ -93,7 +86,6 @@ export default function AlertsPage() {
         </div>
       </div>
 
-      {/* Summary */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Total Alerts", value: alerts.length, icon: Bell, color: "text-primary" },
@@ -109,7 +101,7 @@ export default function AlertsPage() {
                 <Icon className={`h-4 w-4 ${s.color}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{loading ? "—" : s.value}</div>
+                <div className="text-2xl font-bold">{isLoading ? "—" : s.value}</div>
               </CardContent>
             </Card>
           )
@@ -135,7 +127,7 @@ export default function AlertsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
+              {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">Loading alerts...</TableCell>
                 </TableRow>
