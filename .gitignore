@@ -39,3 +39,25 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+*.db
+*.sqlite3
+
+# Backend local storage
+backend/local_vault/
+
+# Dev scratch files
+errors.txt
+errors_utf8.txt
+tsc_output.txt
+tsc_output_utf8.txt
+tsc-error.txt
+tsc-error2.txt
+tsc-error3.txt
+fix_ticks.mjs
+fix_ticks2.mjs

@@ -14,8 +14,12 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Create local vault directory for file storage
-RUN mkdir -p local_vault
+# Create non-root user for security, then set up local vault with correct ownership
+RUN addgroup --system --gid 1001 krypts && adduser --system --uid 1001 --gid 1001 krypts \
+    && mkdir -p local_vault \
+    && chown -R krypts:krypts /app
+
+USER krypts
 
 EXPOSE 8000
 
