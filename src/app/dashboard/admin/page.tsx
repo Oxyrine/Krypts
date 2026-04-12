@@ -1,7 +1,8 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import useSWR from "swr"
 import Link from "next/link"
+import { useState } from "react"
 import { ShieldAlert, ShieldCheck, ShieldX, ShieldOff, RefreshCw, Bell } from "lucide-react"
 import { toast } from "sonner"
 
@@ -31,19 +32,12 @@ const StatusBadge = ({ status }: { status: string }) => {
 }
 
 export default function AdminPage() {
-  const [users, setUsers] = useState<AdminUserResponse[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: users = [], isLoading, mutate } = useSWR<AdminUserResponse[]>(
+    'admin/users',
+    api.admin.users,
+    { onError: () => toast.error("Failed to load users.") }
+  )
   const [actionUserId, setActionUserId] = useState<string | null>(null)
-
-  const loadUsers = () => {
-    setLoading(true)
-    api.admin.users()
-      .then(setUsers)
-      .catch((err) => toast.error(err.message || "Failed to load users"))
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => { loadUsers() }, [])
 
   const handleAction = async (
     userId: string,
@@ -58,8 +52,9 @@ export default function AdminPage() {
       if (action === "ban") await api.admin.banUser(userId)
       else if (action === "suspend") await api.admin.suspendUser(userId)
       else await api.admin.reactivateUser(userId)
-      toast.success(`User ${action}ned.`)
-      loadUsers()
+      const actionLabels = { ban: "banned", suspend: "suspended", reactivate: "reactivated" }
+      toast.success(`User ${actionLabels[action]}.`)
+      mutate()
     } catch (err: any) {
       toast.error(err.message || "Action failed")
     } finally {
@@ -69,7 +64,6 @@ export default function AdminPage() {
 
   const suspended = users.filter(u => u.account_status === "suspended").length
   const banned = users.filter(u => u.account_status === "banned").length
-  const withWarnings = users.filter(u => u.warning_count > 0).length
 
   return (
     <div className="space-y-6">
@@ -79,7 +73,7 @@ export default function AdminPage() {
           <p className="text-muted-foreground">Monitor users, manage accounts, and review security incidents.</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={loadUsers}>
+          <Button variant="outline" size="sm" onClick={() => mutate()}>
             <RefreshCw className="mr-2 h-4 w-4" />Refresh
           </Button>
           <Link href="/dashboard/admin/alerts" className={buttonVariants({ size: "sm" })}>
@@ -88,7 +82,6 @@ export default function AdminPage() {
         </div>
       </div>
 
-      {/* Summary cards */}
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
           { label: "Total Users", value: users.length, icon: ShieldCheck, color: "text-primary" },
@@ -104,14 +97,13 @@ export default function AdminPage() {
                 <Icon className={`h-4 w-4 ${s.color}`} />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{loading ? "—" : s.value}</div>
+                <div className="text-2xl font-bold">{isLoading ? "—" : s.value}</div>
               </CardContent>
             </Card>
           )
         })}
       </div>
 
-      {/* Users table */}
       <Card>
         <CardHeader>
           <CardTitle>User Management</CardTitle>
@@ -130,7 +122,7 @@ export default function AdminPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {loading ? (
+              {isLoading ? (
                 <TableRow>
                   <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">Loading users...</TableCell>
                 </TableRow>

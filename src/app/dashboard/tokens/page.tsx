@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import useSWR from "swr"
 import { useSearchParams } from "next/navigation"
 import { Key, Copy, Clock, Shield } from "lucide-react"
 import { toast } from "sonner"
@@ -17,18 +18,16 @@ export default function TokensPage() {
   const searchParams = useSearchParams()
   const preselectedFileId = searchParams.get("file_id") || ""
 
-  const [files, setFiles] = useState<FileListResponse[]>([])
+  const { data: files = [] } = useSWR<FileListResponse[]>(
+    'files/list',
+    api.files.list,
+    { onError: () => toast.error("Failed to load files.") }
+  )
   const [selectedFileId, setSelectedFileId] = useState(preselectedFileId)
   const [expiresIn, setExpiresIn] = useState("2h")
   const [ipRestriction, setIpRestriction] = useState("")
   const [generating, setGenerating] = useState(false)
   const [result, setResult] = useState<GenerateTokenResponse | null>(null)
-
-  useEffect(() => {
-    api.files.list()
-      .then(setFiles)
-      .catch(() => toast.error("Failed to load files"))
-  }, [])
 
   const handleGenerate = async () => {
     if (!selectedFileId) {

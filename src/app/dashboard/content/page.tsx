@@ -1,6 +1,7 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useState } from "react"
+import useSWR from "swr"
 import { FileVideo, FileText, Image as ImageIcon, Search, MoreHorizontal, ShieldCheck, Trash2, Key } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
@@ -25,24 +26,20 @@ const TypeIcon = ({ type }: { type: string }) => {
 }
 
 export default function ContentPage() {
-  const [files, setFiles] = useState<FileListResponse[]>([])
-  const [loading, setLoading] = useState(true)
+  const { data: files = [], isLoading, mutate } = useSWR<FileListResponse[]>(
+    'files/list',
+    api.files.list,
+    { onError: () => toast.error("Failed to load files.") }
+  )
   const [search, setSearch] = useState("")
   const [deletingId, setDeletingId] = useState<string | null>(null)
-
-  useEffect(() => {
-    api.files.list()
-      .then(setFiles)
-      .catch(() => toast.error("Failed to load files"))
-      .finally(() => setLoading(false))
-  }, [])
 
   const handleDelete = async (fileId: string, filename: string) => {
     if (!confirm(`Delete "${filename}"? This cannot be undone.`)) return
     setDeletingId(fileId)
     try {
       await api.files.delete(fileId)
-      setFiles(prev => prev.filter(f => f.id !== fileId))
+      mutate(files.filter(f => f.id !== fileId), { revalidate: false })
       toast.success("File deleted.")
     } catch (err: any) {
       toast.error(err.message || "Delete failed.")
@@ -89,7 +86,7 @@ export default function ContentPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {loading ? (
+            {isLoading ? (
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-12 text-muted-foreground">
                   Loading files...
@@ -157,7 +154,7 @@ export default function ContentPage() {
         </Table>
       </div>
 
-      {!loading && (
+      {!isLoading && (
         <p className="text-sm text-muted-foreground">
           {filtered.length} file{filtered.length !== 1 ? "s" : ""} • All encrypted with AES-256
         </p>
