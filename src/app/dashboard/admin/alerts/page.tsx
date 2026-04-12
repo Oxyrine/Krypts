@@ -2,6 +2,7 @@
 
 import useSWR from "swr"
 import { useState } from "react"
+import { useSearchParams } from "next/navigation"
 import Link from "next/link"
 import { Bell, CheckCircle2, AlertTriangle, ShieldX, RefreshCw, ArrowLeft } from "lucide-react"
 import { toast } from "sonner"
@@ -27,11 +28,18 @@ const AlertTypeBadge = ({ type }: { type: string }) => {
 }
 
 export default function AlertsPage() {
+  const searchParams = useSearchParams()
+  const filterUserId = searchParams.get("user_id")
   const { data: alerts = [], isLoading, mutate } = useSWR<SecurityAlertResponse[]>(
     'admin/alerts',
-    api.admin.securityAlerts
+    api.admin.securityAlerts,
+    { onError: () => toast.error("Failed to load alerts.") }
   )
   const [markingId, setMarkingId] = useState<string | null>(null)
+
+  const displayAlerts = filterUserId
+    ? alerts.filter(a => a.user_id.startsWith(filterUserId))
+    : alerts
 
   const handleMarkRead = async (alertId: string) => {
     setMarkingId(alertId)
@@ -49,13 +57,23 @@ export default function AlertsPage() {
   }
 
   const handleMarkAllRead = async () => {
-    const unread = alerts.filter(a => a.status === "unread")
-    await Promise.all(unread.map(a => api.admin.markAlertRead(a.alert_id).catch(() => {})))
-    mutate(alerts.map(a => ({ ...a, status: "read" })), { revalidate: false })
-    toast.success(`Marked ${unread.length} alerts as read.`)
+    const unread = displayAlerts.filter(a => a.status === "unread")
+    const results = await Promise.allSettled(
+      unread.map(a => api.admin.markAlertRead(a.alert_id))
+    )
+    const succeeded = results.filter(r => r.status === "fulfilled").length
+    const failed = results.filter(r => r.status === "rejected").length
+    if (succeeded > 0) {
+      mutate(alerts.map(a => ({ ...a, status: "read" })), { revalidate: false })
+      toast.success(`Marked ${succeeded} alert${succeeded !== 1 ? "s" : ""} as read.`)
+    }
+    if (failed > 0) {
+      toast.error(`${failed} alert${failed !== 1 ? "s" : ""} could not be updated.`)
+      mutate()
+    }
   }
 
-  const unreadCount = alerts.filter(a => a.status === "unread").length
+  const unreadCount = displayAlerts.filter(a => a.status === "unread").length
 
   return (
     <div className="space-y-6">
@@ -88,10 +106,10 @@ export default function AlertsPage() {
 
       <div className="grid gap-4 grid-cols-2 lg:grid-cols-4">
         {[
-          { label: "Total Alerts", value: alerts.length, icon: Bell, color: "text-primary" },
+          { label: "Total Alerts", value: displayAlerts.length, icon: Bell, color: "text-primary" },
           { label: "Unread", value: unreadCount, icon: AlertTriangle, color: "text-yellow-500" },
-          { label: "Bans", value: alerts.filter(a => a.alert_type === "banned").length, icon: ShieldX, color: "text-destructive" },
-          { label: "Rapid Sessions", value: alerts.filter(a => a.alert_type === "rapid_session").length, icon: AlertTriangle, color: "text-orange-500" },
+          { label: "Bans", value: displayAlerts.filter(a => a.alert_type === "banned").length, icon: ShieldX, color: "text-destructive" },
+          { label: "Rapid Sessions", value: displayAlerts.filter(a => a.alert_type === "rapid_session").length, icon: AlertTriangle, color: "text-orange-500" },
         ].map((s, i) => {
           const Icon = s.icon
           return (
@@ -131,14 +149,14 @@ export default function AlertsPage() {
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">Loading alerts...</TableCell>
                 </TableRow>
-              ) : alerts.length === 0 ? (
+              ) : displayAlerts.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={7} className="text-center py-12 text-muted-foreground">
                     No security alerts. Your platform is clean!
                   </TableCell>
                 </TableRow>
               ) : (
-                alerts.map(alert => (
+                displayAlerts.map(alert => (
                   <TableRow key={alert.alert_id} className={alert.status === "unread" ? "bg-muted/30" : ""}>
                     <TableCell><AlertTypeBadge type={alert.alert_type} /></TableCell>
                     <TableCell className="text-sm max-w-[280px]">

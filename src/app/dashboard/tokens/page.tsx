@@ -18,7 +18,11 @@ export default function TokensPage() {
   const searchParams = useSearchParams()
   const preselectedFileId = searchParams.get("file_id") || ""
 
-  const { data: files = [] } = useSWR<FileListResponse[]>('files/list', api.files.list)
+  const { data: files = [] } = useSWR<FileListResponse[]>(
+    'files/list',
+    api.files.list,
+    { onError: () => toast.error("Failed to load files.") }
+  )
   const [selectedFileId, setSelectedFileId] = useState(preselectedFileId)
   const [expiresIn, setExpiresIn] = useState("2h")
   const [ipRestriction, setIpRestriction] = useState("")

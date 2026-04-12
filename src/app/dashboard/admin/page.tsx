@@ -32,7 +32,11 @@ const StatusBadge = ({ status }: { status: string }) => {
 }
 
 export default function AdminPage() {
-  const { data: users = [], isLoading, mutate } = useSWR<AdminUserResponse[]>('admin/users', api.admin.users)
+  const { data: users = [], isLoading, mutate } = useSWR<AdminUserResponse[]>(
+    'admin/users',
+    api.admin.users,
+    { onError: () => toast.error("Failed to load users.") }
+  )
   const [actionUserId, setActionUserId] = useState<string | null>(null)
 
   const handleAction = async (
@@ -48,7 +52,8 @@ export default function AdminPage() {
       if (action === "ban") await api.admin.banUser(userId)
       else if (action === "suspend") await api.admin.suspendUser(userId)
       else await api.admin.reactivateUser(userId)
-      toast.success(`User ${action}ned.`)
+      const actionLabels = { ban: "banned", suspend: "suspended", reactivate: "reactivated" }
+      toast.success(`User ${actionLabels[action]}.`)
       mutate()
     } catch (err: any) {
       toast.error(err.message || "Action failed")

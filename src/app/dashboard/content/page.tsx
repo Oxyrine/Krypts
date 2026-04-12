@@ -26,7 +26,11 @@ const TypeIcon = ({ type }: { type: string }) => {
 }
 
 export default function ContentPage() {
-  const { data: files = [], isLoading, mutate } = useSWR<FileListResponse[]>('files/list', api.files.list)
+  const { data: files = [], isLoading, mutate } = useSWR<FileListResponse[]>(
+    'files/list',
+    api.files.list,
+    { onError: () => toast.error("Failed to load files.") }
+  )
   const [search, setSearch] = useState("")
   const [deletingId, setDeletingId] = useState<string | null>(null)
 
