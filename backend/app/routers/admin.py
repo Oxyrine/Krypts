@@ -3,7 +3,7 @@ Admin routes: user management, activity logs, security alerts.
 Requires the requesting user's email to match ADMIN_EMAIL in settings.
 """
 import uuid
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -35,8 +35,8 @@ def _require_admin(current_user):
 
 @router.get("/users", response_model=list[AdminUserResponse])
 async def list_users(
-    skip: int = 0,
-    limit: int = 50,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=200),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
@@ -151,8 +151,8 @@ async def reactivate_user(
 
 @router.get("/security-alerts", response_model=list[SecurityAlertResponse])
 async def security_alerts(
-    skip: int = 0,
-    limit: int = 50,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=50, ge=1, le=200),
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
