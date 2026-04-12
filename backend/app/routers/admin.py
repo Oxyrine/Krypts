@@ -35,11 +35,15 @@ def _require_admin(current_user):
 
 @router.get("/users", response_model=list[AdminUserResponse])
 async def list_users(
+    skip: int = 0,
+    limit: int = 50,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     _require_admin(current_user)
-    result = await db.execute(select(User).order_by(User.created_at.desc()))
+    result = await db.execute(
+        select(User).order_by(User.created_at.desc()).offset(skip).limit(limit)
+    )
     users = result.scalars().all()
     return [AdminUserResponse.from_user(u) for u in users]
 
@@ -147,12 +151,17 @@ async def reactivate_user(
 
 @router.get("/security-alerts", response_model=list[SecurityAlertResponse])
 async def security_alerts(
+    skip: int = 0,
+    limit: int = 50,
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
     _require_admin(current_user)
     result = await db.execute(
-        select(SecurityAlert).order_by(SecurityAlert.timestamp.desc()).limit(200)
+        select(SecurityAlert)
+        .order_by(SecurityAlert.timestamp.desc())
+        .offset(skip)
+        .limit(limit)
     )
     alerts = result.scalars().all()
     return [
