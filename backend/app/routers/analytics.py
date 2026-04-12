@@ -1,6 +1,7 @@
 """
 Analytics routes: usage statistics and security event history.
 """
+import asyncio
 from datetime import datetime, timezone
 
 from fastapi import APIRouter, Depends
@@ -22,49 +23,44 @@ async def usage_analytics(
     current_user=Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    # Total protected files
-    files_result = await db.execute(
-        select(func.count(ProtectedFile.file_id)).where(
-            ProtectedFile.owner_id == current_user.user_id
-        )
-    )
-    total_files = files_result.scalar() or 0
+    uid = current_user.user_id
 
-    # Total bandwidth saved (sum of file sizes in MB)
-    bw_result = await db.execute(
-        select(func.sum(ProtectedFile.size_bytes)).where(
-            ProtectedFile.owner_id == current_user.user_id
-        )
+    files_q = db.execute(
+        select(func.count(ProtectedFile.file_id)).where(ProtectedFile.owner_id == uid)
     )
-    total_bytes = bw_result.scalar() or 0
-    bandwidth_saved_mb = round(total_bytes / (1024 * 1024), 2)
-
-    # Activity events for this user
-    events_result = await db.execute(
+    bw_q = db.execute(
+        select(func.sum(ProtectedFile.size_bytes)).where(ProtectedFile.owner_id == uid)
+    )
+    events_q = db.execute(
         select(func.count(UserActivityLog.log_id)).where(
-            UserActivityLog.user_id == current_user.user_id,
+            UserActivityLog.user_id == uid,
             UserActivityLog.event_type == EventType.login,
         )
     )
-    total_access_events = events_result.scalar() or 0
-
-    # Failed attempts
-    failed_result = await db.execute(
+    failed_q = db.execute(
         select(func.count(UserActivityLog.log_id)).where(
-            UserActivityLog.user_id == current_user.user_id,
+            UserActivityLog.user_id == uid,
             UserActivityLog.event_type == EventType.failure,
         )
     )
-    blocked_attempts = failed_result.scalar() or 0
-
-    # Recent activity logs (last 10)
-    recent_result = await db.execute(
+    recent_q = db.execute(
         select(UserActivityLog)
-        .where(UserActivityLog.user_id == current_user.user_id)
+        .where(UserActivityLog.user_id == uid)
         .order_by(UserActivityLog.timestamp.desc())
         .limit(10)
     )
-    recent_logs = recent_result.scalars().all()
+
+    files_r, bw_r, events_r, failed_r, recent_r = await asyncio.gather(
+        files_q, bw_q, events_q, failed_q, recent_q
+    )
+
+    total_files = files_r.scalar() or 0
+    total_bytes = bw_r.scalar() or 0
+    bandwidth_saved_mb = round(total_bytes / (1024 * 1024), 2)
+    total_access_events = events_r.scalar() or 0
+    blocked_attempts = failed_r.scalar() or 0
+    recent_logs = recent_r.scalars().all()
+
     recent_events = [
         {
             "id": str(log.log_id),
