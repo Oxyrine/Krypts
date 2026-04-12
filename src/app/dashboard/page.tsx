@@ -1,13 +1,14 @@
 "use client"
 
-import { useEffect, useState, lazy, Suspense } from "react"
+import { lazy, Suspense } from "react"
+import useSWR from "swr"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Activity, ShieldCheck, Film, Users, AlertTriangle } from "lucide-react"
 import { api, UsageAnalytics, SecurityEventItem } from "@/lib/api"
 
 const LazyChart = lazy(() => import("recharts").then(m => {
   const { ResponsiveContainer, AreaChart, Area, XAxis, YAxis, Tooltip } = m
-  return { default: ({ data }: { data: typeof import("recharts") extends any ? any : never }) => (
+  return { default: ({ data }: { data: any[] }) => (
     <ResponsiveContainer width="100%" height="100%">
       <AreaChart data={data} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
         <defs>
@@ -43,41 +44,45 @@ const fallbackChartData = [
   { name: "Sun", sessions: 0, blocked: 0 },
 ]
 
-export default function DashboardOverview() {
-  const [analytics, setAnalytics] = useState<UsageAnalytics | null>(null)
-  const [securityEvents, setSecurityEvents] = useState<SecurityEventItem[]>([])
-  const [loading, setLoading] = useState(true)
+async function fetchDashboard(): Promise<{ analytics: UsageAnalytics; events: SecurityEventItem[] }> {
+  const [analytics, events] = await Promise.all([
+    api.analytics.usage(),
+    api.analytics.securityEvents(5),
+  ])
+  return { analytics, events: events as SecurityEventItem[] }
+}
 
-  useEffect(() => {
-    api.analytics.usage().then(setAnalytics).catch(() => {}).finally(() => setLoading(false))
-    api.analytics.securityEvents(5).then(e => setSecurityEvents(e as SecurityEventItem[])).catch(() => {})
-  }, [])
+export default function DashboardOverview() {
+  const { data, isLoading } = useSWR('dashboard', fetchDashboard)
+
+  const analytics = data?.analytics ?? null
+  const securityEvents = data?.events ?? []
 
   const stats = [
     {
       label: "Protected Files",
-      value: loading ? "—" : analytics?.total_files ?? 0,
+      value: isLoading ? "—" : analytics?.total_files ?? 0,
       icon: ShieldCheck,
       color: "text-primary",
       sub: "AES-256 encrypted",
     },
     {
       label: "Access Tokens",
-      value: loading ? "—" : analytics?.total_tokens_issued ?? 0,
+      value: isLoading ? "—" : analytics?.total_tokens_issued ?? 0,
       icon: Users,
       color: "text-emerald-500",
       sub: "Signed JWTs issued",
     },
     {
       label: "Blocked Attempts",
-      value: loading ? "—" : analytics?.blocked_attempts ?? 0,
+      value: isLoading ? "—" : analytics?.blocked_attempts ?? 0,
       icon: Activity,
       color: "text-destructive",
       sub: "Failed auth attempts",
     },
     {
       label: "Bandwidth Saved",
-      value: loading ? "—" : `${analytics?.bandwidth_saved_mb?.toFixed(1) ?? 0} MB`,
+      value: isLoading ? "—" : `${analytics?.bandwidth_saved_mb?.toFixed(1) ?? 0} MB`,
       icon: Film,
       color: "text-blue-500",
       sub: "Total content size",
@@ -107,7 +112,6 @@ export default function DashboardOverview() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-
         <Card className="lg:col-span-4">
           <CardHeader>
             <CardTitle>Usage Analytics</CardTitle>
@@ -159,7 +163,6 @@ export default function DashboardOverview() {
             )}
           </CardContent>
         </Card>
-
       </div>
     </div>
   )
