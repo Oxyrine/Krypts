@@ -49,11 +49,20 @@ async function fetchDashboard(): Promise<{ analytics: UsageAnalytics; events: Se
     api.analytics.usage(),
     api.analytics.securityEvents(5),
   ])
-  return { analytics, events: events as SecurityEventItem[] }
+  return { analytics, events }
 }
 
 export default function DashboardOverview() {
-  const { data, isLoading } = useSWR('dashboard', fetchDashboard)
+  const { data, isLoading, error } = useSWR('dashboard', fetchDashboard)
+
+  if (error) {
+    return (
+      <div className="flex flex-col items-center justify-center h-64 text-muted-foreground gap-2">
+        <AlertTriangle className="h-8 w-8 text-destructive" />
+        <p className="text-sm">Failed to load dashboard data. Please refresh.</p>
+      </div>
+    )
+  }
 
   const analytics = data?.analytics ?? null
   const securityEvents = data?.events ?? []
