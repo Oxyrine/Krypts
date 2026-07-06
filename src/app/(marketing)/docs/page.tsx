@@ -21,23 +21,23 @@ export default function DocsPage() {
             <div>
               <h4 className="font-semibold mb-2">Getting Started</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="text-primary font-medium">Overview</li>
-                <li className="hover:text-foreground cursor-pointer transition-colors">Authentication</li>
-                <li className="hover:text-foreground cursor-pointer transition-colors">SDKs</li>
+                <li><a href="#overview" className="text-primary font-medium hover:underline">Overview</a></li>
+                <li><a href="#authentication" className="hover:text-foreground transition-colors">Authentication</a></li>
+                <li><a href="#sdks" className="hover:text-foreground transition-colors">SDKs</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-2">Content</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="hover:text-foreground cursor-pointer transition-colors">Upload & Encrypt</li>
-                <li className="hover:text-foreground cursor-pointer transition-colors">Manage Files</li>
+                <li><a href="#upload" className="hover:text-foreground transition-colors">Upload &amp; Encrypt</a></li>
+                <li><a href="#manage-files" className="hover:text-foreground transition-colors">Manage Files</a></li>
               </ul>
             </div>
             <div>
               <h4 className="font-semibold mb-2">Access</h4>
               <ul className="space-y-2 text-sm text-muted-foreground">
-                <li className="hover:text-foreground cursor-pointer transition-colors">Issue Tokens</li>
-                <li className="hover:text-foreground cursor-pointer transition-colors">Revoke Tokens</li>
+                <li><a href="#issue-tokens" className="hover:text-foreground transition-colors">Issue Tokens</a></li>
+                <li><a href="#revoke-tokens" className="hover:text-foreground transition-colors">Revoke Tokens</a></li>
               </ul>
             </div>
           </nav>
@@ -203,6 +203,91 @@ def generate_viewer_token(user_id, file_id):
             </div>
             <p className="mt-4 text-sm text-muted-foreground">
               Pass the returned <code className="bg-muted px-1.5 py-0.5 rounded text-foreground inline-block">token</code> to the Krypts Viewer component on your frontend to initialize the secure playback/rendering session.
+            </p>
+          </section>
+
+          <section id="sdks">
+            <h2 className="text-2xl font-bold mb-4">SDKs</h2>
+            <p className="text-muted-foreground mb-4 leading-relaxed">
+              Krypts provides official SDKs to make integration fast and type-safe. Install the one that matches your stack:
+            </p>
+            <div className="space-y-3">
+              <div className="bg-[#0d1117] text-[#c9d1d9] rounded-lg p-4 font-mono text-sm">
+                <span className="text-yellow-400"># Node.js / TypeScript</span>{"\n"}
+                npm install @krypts/sdk
+              </div>
+              <div className="bg-[#0d1117] text-[#c9d1d9] rounded-lg p-4 font-mono text-sm">
+                <span className="text-blue-400"># Python</span>{"\n"}
+                pip install krypts
+              </div>
+              <div className="bg-[#0d1117] text-[#c9d1d9] rounded-lg p-4 font-mono text-sm">
+                <span className="text-green-400"># REST API — no SDK needed</span>{"\n"}
+                curl https://krypts-production.up.railway.app/docs
+              </div>
+            </div>
+          </section>
+
+          <section id="upload">
+            <h2 className="text-2xl font-bold mb-4">Upload &amp; Encrypt</h2>
+            <p className="text-muted-foreground mb-4 leading-relaxed">
+              Upload content via a <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">multipart/form-data</code> POST request. Krypts automatically encrypts the file at rest using AES-256 and returns a stable <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">file_id</code>.
+            </p>
+            <div className="bg-[#0d1117] text-[#c9d1d9] rounded-lg p-5 font-mono text-sm overflow-x-auto relative">
+              <Badge variant="outline" className="text-xs absolute top-4 right-4 bg-muted/20 text-muted-foreground border-slate-700">cURL</Badge>
+              <pre><code>{`curl -X POST https://krypts-production.up.railway.app/api/files/upload \\
+  -H "Authorization: Bearer <your_token>" \\
+  -F "file=@/path/to/document.pdf"`}</code></pre>
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">Supported formats: PDF, PNG, JPG, MP4, MOV and more.</p>
+          </section>
+
+          <section id="manage-files">
+            <h2 className="text-2xl font-bold mb-4">Manage Files</h2>
+            <p className="text-muted-foreground mb-4 leading-relaxed">
+              List, inspect, and delete your protected files via the Content Manager API.
+            </p>
+            <div className="bg-[#0d1117] text-[#c9d1d9] rounded-lg p-5 font-mono text-sm overflow-x-auto relative">
+              <Badge variant="outline" className="text-xs absolute top-4 right-4 bg-muted/20 text-muted-foreground border-slate-700">cURL</Badge>
+              <pre><code>{`# List all files
+curl https://krypts-production.up.railway.app/api/files \\
+  -H "Authorization: Bearer <your_token>"
+
+# Delete a file
+curl -X DELETE https://krypts-production.up.railway.app/api/files/<file_id> \\
+  -H "Authorization: Bearer <your_token>"`}</code></pre>
+            </div>
+          </section>
+
+          <section id="issue-tokens">
+            <h2 className="text-2xl font-bold mb-4">Issue Tokens</h2>
+            <p className="text-muted-foreground mb-4 leading-relaxed">
+              Generate a signed, time-limited JWT that grants a specific user access to a specific file. Pass this token to the Krypts viewer URL.
+            </p>
+            <div className="bg-[#0d1117] text-[#c9d1d9] rounded-lg p-5 font-mono text-sm overflow-x-auto relative">
+              <Badge variant="outline" className="text-xs absolute top-4 right-4 bg-muted/20 text-muted-foreground border-slate-700">cURL</Badge>
+              <pre><code>{`curl -X POST https://krypts-production.up.railway.app/api/tokens/generate \\
+  -H "Authorization: Bearer <your_token>" \\
+  -H "Content-Type: application/json" \\
+  -d '{
+    "file_id": "your-file-uuid",
+    "expires_in": "2h",
+    "allow_download": false
+  }'`}</code></pre>
+            </div>
+          </section>
+
+          <section id="revoke-tokens">
+            <h2 className="text-2xl font-bold mb-4">Revoke Tokens</h2>
+            <p className="text-muted-foreground mb-4 leading-relaxed">
+              Instantly invalidate any previously issued token. Once revoked, the viewer URL returns a <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">401 Unauthorized</code> — useful for removing access when a subscription lapses or a user is banned.
+            </p>
+            <div className="bg-[#0d1117] text-[#c9d1d9] rounded-lg p-5 font-mono text-sm overflow-x-auto relative">
+              <Badge variant="outline" className="text-xs absolute top-4 right-4 bg-muted/20 text-muted-foreground border-slate-700">cURL</Badge>
+              <pre><code>{`curl -X DELETE https://krypts-production.up.railway.app/api/tokens/<token_id> \\
+  -H "Authorization: Bearer <your_token>"`}</code></pre>
+            </div>
+            <p className="mt-4 text-sm text-muted-foreground">
+              The <code className="bg-muted px-1.5 py-0.5 rounded text-foreground">token_id</code> (<code className="bg-muted px-1.5 py-0.5 rounded text-foreground">id</code> field) is returned when you issue the token.
             </p>
           </section>
 
