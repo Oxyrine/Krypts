@@ -16,7 +16,7 @@ from reportlab.lib.colors import Color
 def watermark_image(
     image_bytes: bytes,
     text: str,
-    opacity: float = 0.25,
+    opacity: float = 0.12,
 ) -> bytes:
     """
     Overlay a repeating diagonal watermark text grid on an image.
@@ -29,20 +29,20 @@ def watermark_image(
     overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
     draw = ImageDraw.Draw(overlay)
 
-    # Try to get a font, fall back to default
+    # Try to get a font, fall back to default — smaller font size
     try:
-        font = ImageFont.truetype("arial.ttf", size=max(16, width // 30))
+        font = ImageFont.truetype("arial.ttf", size=max(12, width // 50))
     except (IOError, OSError):
         font = ImageFont.load_default()
 
     alpha = int(255 * opacity)
-    fill_color = (200, 200, 200, alpha)
+    fill_color = (100, 100, 100, alpha)
 
-    # Draw diagonal grid of watermark text
-    step_x = max(200, width // 4)
-    step_y = max(80, height // 8)
-    for y in range(-height, height * 2, step_y):
-        for x in range(-width, width * 2, step_x):
+    # Widely spaced diagonal grid — only 2-3 watermarks visible at once
+    step_x = max(width // 2, 300)
+    step_y = max(height // 3, 200)
+    for y in range(0, height * 2, step_y):
+        for x in range(-width // 2, width * 2, step_x):
             draw.text((x, y), text, font=font, fill=fill_color)
 
     # Rotate 30 degrees
@@ -80,19 +80,19 @@ def watermark_pdf_page(
     wm_buf = io.BytesIO()
     c = rl_canvas.Canvas(wm_buf, pagesize=(page_width, page_height))
 
-    # Bold, visible watermark text — dark red with higher opacity
-    c.setFillColor(Color(0.8, 0.1, 0.1, alpha=0.35))
-    font_size = max(18, int(page_width / 18))
-    c.setFont("Helvetica-Bold", font_size)
+    # Subtle watermark — light gray, low opacity
+    c.setFillColor(Color(0.5, 0.5, 0.5, alpha=0.15))
+    font_size = max(12, int(page_width / 30))
+    c.setFont("Helvetica", font_size)
 
-    # Diagonal repeating pattern — denser grid
+    # Widely spaced diagonal pattern — only 2-3 instances visible
     c.saveState()
     c.translate(page_width / 2, page_height / 2)
     c.rotate(30)
-    step_x = max(250, page_width // 2)
-    step_y = max(80, page_height // 6)
-    for xi in range(-4, 5):
-        for yi in range(-8, 9):
+    step_x = max(page_width * 0.6, 300)
+    step_y = max(page_height * 0.4, 200)
+    for xi in range(-2, 3):
+        for yi in range(-3, 4):
             c.drawCentredString(xi * step_x, yi * step_y, watermark_text)
     c.restoreState()
     c.save()
