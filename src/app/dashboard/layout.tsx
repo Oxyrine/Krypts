@@ -56,7 +56,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <nav className="grid items-start px-2 text-sm font-medium lg:px-4">
               <div className="mb-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider px-2">Main Menu</div>
               {navItems.map((item, index) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const isActive = item.href === "/dashboard"
+                  ? pathname === "/dashboard"
+                  : pathname === item.href || pathname.startsWith(item.href + "/");
                 const Icon = item.icon;
                 return (
                   <Link

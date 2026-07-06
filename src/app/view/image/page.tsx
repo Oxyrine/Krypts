@@ -11,7 +11,11 @@ const STORAGE_KEY = "krypts_watermark_settings"
 function getWatermarkSettings() {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) return JSON.parse(stored)
+    if (stored) {
+      const parsed = JSON.parse(stored)
+      // Image viewer always forces dark (black) text — white text is invisible on light images
+      return { ...parsed, colorScheme: "dark" }
+    }
   } catch { /* ignore */ }
   return { enabled: true, text: "Confidential - {user_id}", opacity: [15], density: [3], colorScheme: "dark" }
 }
