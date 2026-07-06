@@ -127,6 +127,7 @@ export default function PricingSection6() {
 
   return (
     <section
+      id="pricing"
       className="py-24 md:py-32 mx-auto relative bg-background"
       ref={pricingRef}
     >
