@@ -1,10 +1,17 @@
 from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
+import logging
 
 from app.config import settings
 
+logger = logging.getLogger(__name__)
+
 # SQLite doesn't support connection pooling options; detect and configure accordingly
 _is_sqlite = settings.database_url.startswith("sqlite")
+
+# Log which DB we are connecting to (masks password for security)
+_db_display = settings.database_url.split("@")[-1] if "@" in settings.database_url else settings.database_url
+print(f"[DB] Connecting to: {'SQLite' if _is_sqlite else 'PostgreSQL'} — {_db_display}", flush=True)
 
 engine = create_async_engine(
     settings.database_url,
