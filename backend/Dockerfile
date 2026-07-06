@@ -14,13 +14,17 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-# Create non-root user for security, then set up local vault with correct ownership
+# Create non-root user for security
 RUN addgroup --system --gid 1001 krypts && adduser --system --uid 1001 --gid 1001 krypts \
     && mkdir -p local_vault \
     && chown -R krypts:krypts /app
 
-USER krypts
+# Copy and make entrypoint executable (runs as root to fix mounted volume perms)
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 EXPOSE 8000
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+# Run as root so entrypoint.sh can chmod the mounted volume,
+# then exec drops into uvicorn (still benefiting from the permission fix)
+ENTRYPOINT ["/entrypoint.sh"]
