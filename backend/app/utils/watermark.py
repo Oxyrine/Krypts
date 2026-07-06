@@ -20,10 +20,26 @@ def watermark_image(
 ) -> bytes:
     """
     Overlay a repeating diagonal watermark text grid on an image.
+    Automatically picks dark or light text based on image brightness.
     Returns PNG bytes.
     """
     img = Image.open(io.BytesIO(image_bytes)).convert("RGBA")
     width, height = img.size
+
+    # --- Auto-detect background brightness ---
+    # Downsample to a tiny thumbnail for fast mean luminance calculation
+    thumb = img.convert("L").resize((64, 64), Image.LANCZOS)
+    mean_brightness = sum(thumb.getdata()) / (64 * 64)  # 0–255
+
+    # Dark text on light backgrounds, light text on dark backgrounds
+    if mean_brightness > 140:
+        # Light image → use dark charcoal watermark
+        r, g, b = 40, 40, 40
+        actual_opacity = max(opacity, 0.18)  # slightly more visible on white
+    else:
+        # Dark image → use light gray watermark
+        r, g, b = 210, 210, 210
+        actual_opacity = opacity
 
     # Create transparent overlay
     overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
@@ -35,8 +51,8 @@ def watermark_image(
     except (IOError, OSError):
         font = ImageFont.load_default()
 
-    alpha = int(255 * opacity)
-    fill_color = (100, 100, 100, alpha)
+    alpha = int(255 * actual_opacity)
+    fill_color = (r, g, b, alpha)
 
     # Widely spaced diagonal grid — only 2-3 watermarks visible at once
     step_x = max(width // 2, 300)
