@@ -4,7 +4,7 @@ Krypts is a secure, plug-and-play Digital Rights Management (DRM) platform desig
 
 ---
 
-## 🛠️ Tech Stack & Infrastructure
+##  Tech Stack & Infrastructure
 
 The project is built on a modern, decoupled architecture split into a React frontend and a Python backend:
 
@@ -25,7 +25,7 @@ The project is built on a modern, decoupled architecture split into a React fron
 
 ---
 
-## 🏗️ Architecture & Core Workflows
+##  Architecture & Core Workflows
 
 ```mermaid
 graph TD
@@ -62,7 +62,7 @@ graph TD
 
 ---
 
-## 💾 Database Persistence & Storage
+##  Database Persistence & Storage
 
 To avoid losing user accounts and uploaded files whenever the container redeploys, the platform utilizes Railway's infrastructure services:
 
@@ -76,7 +76,7 @@ To avoid losing user accounts and uploaded files whenever the container redeploy
 
 ---
 
-## 📂 Project Directory Structure
+## Project Directory Structure
 
 ```bash
 ├── backend/                  # Python FastAPI Backend
@@ -104,7 +104,7 @@ To avoid losing user accounts and uploaded files whenever the container redeploy
 
 ---
 
-## 🚀 Running Locally
+##  Running Locally
 
 ### 1. Start the Backend
 Navigate to the `backend/` directory, set up your Python virtual environment, install requirements, and run the server:
