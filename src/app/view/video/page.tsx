@@ -2,8 +2,9 @@
 
 import { useEffect, useState, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { Shield, AlertTriangle } from "lucide-react"
+import { Shield, AlertTriangle, Download } from "lucide-react"
 import { API_BASE, api } from "@/lib/api"
+import { Button } from "@/components/ui/button"
 
 const STORAGE_KEY = "krypts_watermark_settings"
 
@@ -75,10 +76,22 @@ function VideoViewerInner() {
   const token = searchParams.get("token") || ""
   const fileId = searchParams.get("file_id") || ""
   const [userEmail, setUserEmail] = useState<string>("")
+  const [canDownload, setCanDownload] = useState(false)
 
   useEffect(() => {
     api.auth.me().then((u) => setUserEmail(u.email)).catch(() => {})
   }, [])
+
+  useEffect(() => {
+    if (!token || !fileId) return
+    api.tokens.validate(token, fileId)
+      .then((resp: any) => {
+        if (resp.valid) {
+          setCanDownload(!!resp.permissions?.download)
+        }
+      })
+      .catch(() => {})
+  }, [token, fileId])
 
   useEffect(() => {
     const handleContextMenu = (e: MouseEvent) => e.preventDefault()
@@ -106,6 +119,15 @@ function VideoViewerInner() {
     }
   }, [])
 
+  const handleDownload = () => {
+    const link = document.createElement("a")
+    link.href = `${API_BASE}/download/${fileId}?token=${token}`
+    link.download = ""
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
+
   if (!token || !fileId) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-900">
@@ -127,9 +149,22 @@ function VideoViewerInner() {
       onCut={(e) => e.preventDefault()}
       onDragStart={(e) => e.preventDefault()}
     >
-      <div className="sticky top-0 z-10 flex items-center gap-2 px-4 h-12 bg-zinc-900 border-b border-zinc-800 text-white">
-        <Shield className="h-4 w-4 text-primary" />
-        <span className="text-sm text-zinc-300">Protected by Krypts DRM • Streaming encrypted content</span>
+      <div className="sticky top-0 z-10 flex items-center justify-between px-4 h-12 bg-zinc-900 border-b border-zinc-800 text-white">
+        <div className="flex items-center gap-2">
+          <Shield className="h-4 w-4 text-primary" />
+          <span className="text-sm text-zinc-300">Protected by Krypts DRM • Streaming encrypted content</span>
+        </div>
+        {canDownload && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-8 border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white flex items-center gap-2"
+            onClick={handleDownload}
+          >
+            <Download className="h-4 w-4" />
+            Download Original
+          </Button>
+        )}
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6">

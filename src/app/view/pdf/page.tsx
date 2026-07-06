@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
-import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Shield, AlertTriangle } from "lucide-react"
+import { ZoomIn, ZoomOut, ChevronLeft, ChevronRight, Shield, AlertTriangle, Download } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { API_BASE, api } from "@/lib/api"
 
@@ -80,14 +80,30 @@ function PdfViewerInner() {
   const [failedPages, setFailedPages] = useState<Set<number>>(new Set())
   const [validToken, setValidToken] = useState(!!token && !!fileId)
   const [userEmail, setUserEmail] = useState("")
+  const [canDownload, setCanDownload] = useState(false)
 
   useEffect(() => {
     api.auth.me().then((u) => setUserEmail(u.email)).catch(() => {})
   }, [])
 
   useEffect(() => {
-    if (!token || !fileId) setValidToken(false)
+    if (!token || !fileId) {
+      setValidToken(false)
+      return
+    }
+    api.tokens.validate(token, fileId)
+      .then((resp: any) => {
+        if (resp.valid) {
+          setValidToken(true)
+          setCanDownload(!!resp.permissions?.download)
+        } else {
+          setValidToken(false)
+        }
+      })
+      .catch(() => setValidToken(false))
+  }, [token, fileId])
 
+  useEffect(() => {
     // Anti-piracy measures
     const handleContextMenu = (e: MouseEvent) => e.preventDefault()
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -108,7 +124,16 @@ function PdfViewerInner() {
       window.removeEventListener("beforeprint", beforePrint)
       window.removeEventListener("afterprint", afterPrint)
     }
-  }, [token, fileId])
+  }, [])
+
+  const handleDownload = () => {
+    const link = document.createElement("a")
+    link.href = `${API_BASE}/download/${fileId}?token=${token}`
+    link.download = ""
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  }
 
   if (!validToken) {
     return (
@@ -148,14 +173,27 @@ function PdfViewerInner() {
             <ZoomIn className="h-4 w-4" />
           </Button>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-300 hover:text-white hover:bg-zinc-700" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage <= 1}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <span className="text-sm text-zinc-300">Page {currentPage}</span>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-300 hover:text-white hover:bg-zinc-700" onClick={() => setCurrentPage(p => p + 1)}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-4">
+          <div className="flex items-center gap-2">
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-300 hover:text-white hover:bg-zinc-700" onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage <= 1}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <span className="text-sm text-zinc-300">Page {currentPage}</span>
+            <Button variant="ghost" size="icon" className="h-8 w-8 text-zinc-300 hover:text-white hover:bg-zinc-700" onClick={() => setCurrentPage(p => p + 1)}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+          {canDownload && (
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-8 border-zinc-700 bg-zinc-800 text-zinc-200 hover:bg-zinc-700 hover:text-white flex items-center gap-2"
+              onClick={handleDownload}
+            >
+              <Download className="h-4 w-4" />
+              Download
+            </Button>
+          )}
         </div>
       </div>
 

@@ -3,7 +3,7 @@
 import { useState } from "react"
 import useSWR from "swr"
 import { useSearchParams } from "next/navigation"
-import { Key, Copy, Clock, Shield } from "lucide-react"
+import { Key, Copy, Clock, Shield, ExternalLink } from "lucide-react"
 import { toast } from "sonner"
 
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +12,7 @@ import { Label } from "@/components/ui/label"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
+import { Switch } from "@/components/ui/switch"
 import { api, FileListResponse, GenerateTokenResponse } from "@/lib/api"
 
 export default function TokensPage() {
@@ -26,6 +27,7 @@ export default function TokensPage() {
   const [selectedFileId, setSelectedFileId] = useState(preselectedFileId)
   const [expiresIn, setExpiresIn] = useState("2h")
   const [ipRestriction, setIpRestriction] = useState("")
+  const [allowDownload, setAllowDownload] = useState(false)
   const [generating, setGenerating] = useState(false)
   const [result, setResult] = useState<GenerateTokenResponse | null>(null)
 
@@ -41,7 +43,7 @@ export default function TokensPage() {
         file_id: selectedFileId,
         expires_in: expiresIn,
         ip_restriction: ipRestriction || undefined,
-        permissions: { view: true, download: false },
+        permissions: { view: true, download: allowDownload },
       })
       setResult(resp)
       toast.success("Token generated successfully!")
@@ -93,7 +95,7 @@ export default function TokensPage() {
             <Label>Expiration</Label>
             <Select value={expiresIn} onValueChange={(v) => v && setExpiresIn(v)}>
               <SelectTrigger>
-                <SelectValue />
+                <SelectValue placeholder="Select expiry duration" />
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="30m">30 minutes</SelectItem>
@@ -113,6 +115,17 @@ export default function TokensPage() {
               onChange={(e) => setIpRestriction(e.target.value)}
             />
             <p className="text-xs text-muted-foreground">Leave blank to allow any IP address.</p>
+          </div>
+
+          <div className="flex items-center justify-between border-t border-zinc-155 pt-4">
+            <div className="space-y-0.5">
+              <Label className="text-sm font-semibold">Allow Download</Label>
+              <p className="text-xs text-muted-foreground">Enable to let recipients download the decrypted file.</p>
+            </div>
+            <Switch
+              checked={allowDownload}
+              onCheckedChange={setAllowDownload}
+            />
           </div>
 
           <Button onClick={handleGenerate} disabled={generating || !selectedFileId} className="w-full">
@@ -164,6 +177,13 @@ export default function TokensPage() {
                     }}
                   >
                     <Copy className="h-4 w-4" />
+                  </Button>
+                  <Button
+                    variant="default" size="icon"
+                    className="bg-green-600 hover:bg-green-700 text-white"
+                    onClick={() => window.open(`${window.location.origin}${viewerBase}${result.token}`, "_blank")}
+                  >
+                    <ExternalLink className="h-4 w-4" />
                   </Button>
                 </div>
               </div>

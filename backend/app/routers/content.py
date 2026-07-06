@@ -161,3 +161,44 @@ async def get_image(file_id: str, token: str, request: Request):
             "X-Content-Type-Options": "nosniff",
         },
     )
+
+
+# ---------------------------------------------------------------------------
+# GET /download/{file_id}
+# ---------------------------------------------------------------------------
+
+@router.get("/download/{file_id}")
+async def download_file(file_id: str, token: str, request: Request):
+    client_ip = request.client.host if request.client else ""
+    payload = _validate_content_token(token, file_id, client_ip)
+
+    # Check if download permission is granted in the token
+    permissions = payload.get("permissions", {})
+    if not permissions.get("download"):
+        raise HTTPException(
+            status_code=403,
+            detail="Download permission not granted by this token."
+        )
+
+    pf = await _get_file_record(file_id)
+    plaintext = await _decrypt_file(pf)
+
+    # Determine media type based on file extension
+    media_type = "application/octet-stream"
+    filename_lower = pf.filename.lower()
+    if filename_lower.endswith((".png", ".jpg", ".jpeg", ".gif", ".webp")):
+        media_type = "image/png"
+    elif filename_lower.endswith(".pdf"):
+        media_type = "application/pdf"
+    elif filename_lower.endswith((".mp4", ".webm", ".mov", ".avi", ".mkv")):
+        media_type = "video/mp4"
+
+    return Response(
+        content=plaintext,
+        media_type=media_type,
+        headers={
+            "Content-Disposition": f'attachment; filename="{pf.filename}"',
+            "X-Content-Type-Options": "nosniff",
+        },
+    )
+
