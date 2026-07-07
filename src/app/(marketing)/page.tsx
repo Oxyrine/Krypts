@@ -69,7 +69,7 @@ export default function LandingPage() {
             >
               View Dashboard
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
