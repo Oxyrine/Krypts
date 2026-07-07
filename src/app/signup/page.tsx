@@ -45,14 +45,7 @@ export default function SignupPage() {
   };
 
   return (
-    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden">
-      {/* Shader background — lazy loaded so form appears instantly */}
-      <div className="absolute inset-0 z-0">
-        <Suspense fallback={<div className="h-full w-full bg-zinc-950" />}>
-          <ShaderAnimation />
-        </Suspense>
-      </div>
-      <div className="absolute inset-0 z-0 bg-black/40" />
+    <div className="relative flex min-h-screen items-center justify-center p-4 overflow-hidden bg-just-black">
 
       <div className="relative z-10 w-full max-w-md space-y-6">
         {/* Logo */}
