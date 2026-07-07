@@ -30,23 +30,6 @@
   /* GSAP Typography */
   --font-mori: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
 
-  /* GSAP Spacing */
-  --spacing-8: 8px;
-  --spacing-12: 12px;
-  --spacing-16: 16px;
-  --spacing-20: 20px;
-  --spacing-24: 24px;
-  --spacing-32: 32px;
-  --spacing-76: 76px;
-  --spacing-96: 96px;
-  --spacing-108: 108px;
-
-  /* Border Radius */
-  --radius-sm: 1px;
-  --radius-lg: 8px;
-  --radius-full: 100px;
-  --radius-full-2: 9999px;
-
   /* Default shadcn vars */
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
@@ -77,6 +60,15 @@
   --color-popover: var(--popover);
   --color-card-foreground: var(--card-foreground);
   --color-card: var(--card);
+
+  /* Restore shadcn border radius */
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+  --radius-3xl: calc(var(--radius) * 2.2);
+  --radius-4xl: calc(var(--radius) * 2.6);
 }
 
 :root {
