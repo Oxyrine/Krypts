@@ -1,4 +1,3 @@
-import { GlassEffect, GlassFilter } from "@/components/ui/liquid-glass"
 import { ProblemSection } from "@/components/marketing/problem"
 import { SolutionSection } from "@/components/marketing/solution"
 import { FeaturesSection } from "@/components/marketing/features"
@@ -9,99 +8,45 @@ import Link from "next/link"
 
 export default function LandingPage() {
   return (
-    <div className="flex flex-col w-full overflow-hidden">
-      <GlassFilter />
+    <div className="flex flex-col w-full overflow-hidden bg-just-black font-mori">
 
-      {/* Hero — clean dark grid */}
-      <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-zinc-950">
+      {/* GSAP-Style Hero */}
+      <section className="relative min-h-[90vh] w-full flex flex-col items-start justify-center px-6 md:px-12 py-32 bg-just-black overflow-hidden">
+        
+        {/* Soft Decorative Blob */}
+        <div className="absolute top-1/4 right-[-10%] w-[600px] h-[600px] rounded-full bg-gradient-to-br from-shockingly-green to-blue opacity-30 blur-[100px] pointer-events-none" />
 
-        {/* Subtle dot-grid background */}
-        <div
-          className="absolute inset-0 opacity-20"
-          style={{
-            backgroundImage:
-              "radial-gradient(circle, #6366f1 1px, transparent 1px)",
-            backgroundSize: "32px 32px",
-          }}
-        />
-
-        {/* Soft center glow */}
-        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-          <div className="w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-3xl" />
-        </div>
-
-        {/* Content */}
-        <div className="relative z-10 flex flex-col items-center gap-8 px-4 text-center">
-          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5">
-            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
-            <span className="text-sm font-medium text-indigo-300">
-              Now with OS-level screenshot protection
-            </span>
+        <div className="relative z-10 w-full max-w-[1280px] mx-auto">
+          {/* Eyebrow */}
+          <div className="text-[16px] md:text-[19px] text-surface-cream mb-8">
+            { '{ Krypts DRM® }' }
           </div>
 
-          <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl text-white max-w-3xl">
-            The Plug-and-Play{" "}
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">
-              DRM Platform
-            </span>
+          {/* Massive Display Headline */}
+          <h1 className="text-[90px] sm:text-[140px] md:text-[224px] font-semibold leading-[0.9] tracking-[-0.02em] text-surface-cream max-w-full">
+            Protect<br />Anything.
           </h1>
 
-          <p className="text-lg text-zinc-400 max-w-2xl">
-            Protect your digital content with military-grade encryption,
-            real-time watermarking, and granular access control — all through a
-            simple API.
+          <p className="text-[19px] md:text-[23px] leading-[1.38] text-surface-cream max-w-2xl mt-12 mb-16">
+            Military-grade encryption, real-time watermarking, and OS-level screenshot blocking — all through a simple API and native desktop app.
           </p>
 
-          {/* CTA buttons */}
-          <div className="flex flex-wrap justify-center gap-4 pt-2">
-            <Link href="/signup">
-              <GlassEffect className="rounded-2xl px-8 py-4 hover:px-9 hover:py-5 hover:rounded-3xl">
-                <span className="text-base font-semibold text-white">
-                  Get Started Free
-                </span>
-              </GlassEffect>
-            </Link>
-
-            <Link href="/dashboard">
-              <GlassEffect
-                className="rounded-2xl px-8 py-4 hover:px-9 hover:py-5 hover:rounded-3xl"
-                style={{ background: "rgba(255,255,255,0.05)" }}
-              >
-                <span className="text-base font-semibold text-white/80">
-                  View Dashboard
-                </span>
-              </GlassEffect>
-            </Link>
-
-            {/* Download button — clearly visible */}
+          {/* CTA Buttons */}
+          <div className="flex flex-wrap items-center gap-6">
             <a
               href="https://github.com/Oxyrine/krypts-2.0/releases/download/v0.1.0/Krypts.DRM.Setup.0.1.0.exe"
-              className="flex items-center gap-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition-all duration-200 px-8 py-4 shadow-lg shadow-indigo-900/50"
+              className="relative inline-flex items-center justify-center px-[24px] py-[15px] text-[18px] font-semibold text-surface-cream rounded-[100px] border-[1.5px] border-transparent bg-just-black bg-clip-padding before:absolute before:inset-0 before:-m-[1.5px] before:rounded-[100px] before:bg-gradient-to-r before:from-shockingly-green before:to-light-green before:-z-10 transition-transform hover:scale-[1.02]"
             >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-5 w-5 text-white shrink-0"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
-                />
-              </svg>
-              <span className="text-base font-semibold text-white">
-                Download for Windows
-              </span>
+              Get Krypts for Windows
             </a>
+            
+            <Link 
+              href="/dashboard"
+              className="inline-flex items-center justify-center px-[24px] py-[15px] text-[18px] font-semibold text-surface-cream rounded-[100px] border border-surface-cream hover:opacity-80 transition-opacity"
+            >
+              View Dashboard
+            </Link>
           </div>
-
-          {/* Subtle social proof line */}
-          <p className="text-xs text-zinc-500 mt-2">
-            Free · No credit card · Windows 10 / 11 x64
-          </p>
         </div>
       </section>
 
