@@ -1,7 +1,4 @@
-import dynamic from "next/dynamic"
 import { GlassEffect, GlassFilter } from "@/components/ui/liquid-glass"
-
-const ShaderAnimation = dynamic(() => import("@/components/ui/shader-animation").then(m => ({ default: m.ShaderAnimation })), { loading: () => <div className="h-full w-full bg-zinc-950" /> })
 import { ProblemSection } from "@/components/marketing/problem"
 import { SolutionSection } from "@/components/marketing/solution"
 import { FeaturesSection } from "@/components/marketing/features"
@@ -15,46 +12,99 @@ export default function LandingPage() {
     <div className="flex flex-col w-full overflow-hidden">
       <GlassFilter />
 
-      {/* Hero with Shader Animation */}
-      <section className="relative h-screen w-full">
-        <ShaderAnimation />
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-8 px-4 text-center">
-          <GlassEffect className="rounded-full px-5 py-2">
-            <span className="text-sm font-medium text-white">
-              New: Universal API v2.0 Released
+      {/* Hero — clean dark grid */}
+      <section className="relative min-h-screen w-full flex items-center justify-center overflow-hidden bg-zinc-950">
+
+        {/* Subtle dot-grid background */}
+        <div
+          className="absolute inset-0 opacity-20"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle, #6366f1 1px, transparent 1px)",
+            backgroundSize: "32px 32px",
+          }}
+        />
+
+        {/* Soft center glow */}
+        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+          <div className="w-[600px] h-[600px] rounded-full bg-indigo-600/10 blur-3xl" />
+        </div>
+
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center gap-8 px-4 text-center">
+          <div className="inline-flex items-center gap-2 rounded-full border border-indigo-500/30 bg-indigo-500/10 px-4 py-1.5">
+            <span className="h-1.5 w-1.5 rounded-full bg-indigo-400 animate-pulse" />
+            <span className="text-sm font-medium text-indigo-300">
+              Now with OS-level screenshot protection
             </span>
-          </GlassEffect>
+          </div>
 
           <h1 className="text-4xl font-extrabold tracking-tight sm:text-6xl text-white max-w-3xl">
-            The Plug-and-Play <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-violet-400">DRM Platform</span>
+            The Plug-and-Play{" "}
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-violet-400">
+              DRM Platform
+            </span>
           </h1>
-          <p className="text-lg text-gray-300 max-w-2xl">
-            Protect your digital content with military-grade encryption, real-time watermarking, and granular access control — all through a simple API.
+
+          <p className="text-lg text-zinc-400 max-w-2xl">
+            Protect your digital content with military-grade encryption,
+            real-time watermarking, and granular access control — all through a
+            simple API.
           </p>
 
-          <div className="flex flex-wrap justify-center gap-4">
+          {/* CTA buttons */}
+          <div className="flex flex-wrap justify-center gap-4 pt-2">
             <Link href="/signup">
               <GlassEffect className="rounded-2xl px-8 py-4 hover:px-9 hover:py-5 hover:rounded-3xl">
-                <span className="text-base font-semibold text-white">Get Started Free</span>
+                <span className="text-base font-semibold text-white">
+                  Get Started Free
+                </span>
               </GlassEffect>
             </Link>
+
             <Link href="/dashboard">
-              <GlassEffect className="rounded-2xl px-8 py-4 hover:px-9 hover:py-5 hover:rounded-3xl" style={{ background: "rgba(255,255,255,0.05)" }}>
-                <span className="text-base font-semibold text-white/90">View Dashboard</span>
+              <GlassEffect
+                className="rounded-2xl px-8 py-4 hover:px-9 hover:py-5 hover:rounded-3xl"
+                style={{ background: "rgba(255,255,255,0.05)" }}
+              >
+                <span className="text-base font-semibold text-white/80">
+                  View Dashboard
+                </span>
               </GlassEffect>
             </Link>
+
+            {/* Download button — clearly visible */}
             <a
               href="https://github.com/Oxyrine/krypts-2.0/releases/download/v0.1.0/Krypts.DRM.Setup.0.1.0.exe"
-              download
+              className="flex items-center gap-2.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 transition-all duration-200 px-8 py-4 shadow-lg shadow-indigo-900/50"
             >
-              <GlassEffect className="rounded-2xl px-8 py-4 hover:px-9 hover:py-5 hover:rounded-3xl flex items-center gap-2" style={{ background: "rgba(99,102,241,0.18)" }}>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-indigo-300" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
-                <span className="text-base font-semibold text-indigo-200">Download for Windows</span>
-              </GlassEffect>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-white shrink-0"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                strokeWidth={2}
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"
+                />
+              </svg>
+              <span className="text-base font-semibold text-white">
+                Download for Windows
+              </span>
             </a>
           </div>
+
+          {/* Subtle social proof line */}
+          <p className="text-xs text-zinc-500 mt-2">
+            Free · No credit card · Windows 10 / 11 x64
+          </p>
         </div>
       </section>
+
       <ProblemSection />
       <SolutionSection />
       <FeaturesSection />
@@ -86,7 +136,6 @@ export default function LandingPage() {
           <div className="flex flex-col items-center gap-3 shrink-0">
             <a
               href="https://github.com/Oxyrine/krypts-2.0/releases/download/v0.1.0/Krypts.DRM.Setup.0.1.0.exe"
-              download
               className="group flex items-center gap-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 transition-all duration-200 px-8 py-4 shadow-lg shadow-indigo-900/40"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
