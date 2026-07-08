@@ -71,9 +71,14 @@ export default function LandingPage() {
               <a
                 href="https://github.com/Oxyrine/krypts-2.0/releases/download/v0.1.0/Krypts.DRM.Setup.0.1.0.exe"
                 download
-                className="relative inline-flex items-center justify-center px-[32px] py-[20px] text-[18px] font-semibold text-surface-cream rounded-[100px] border-[1.5px] border-transparent bg-just-black bg-clip-padding before:absolute before:inset-0 before:-m-[1.5px] before:rounded-[100px] before:bg-gradient-to-r before:from-shockingly-green before:to-light-green before:-z-10 transition-transform hover:scale-[1.02]"
+                className="group relative inline-flex rounded-[100px] p-[1.5px] bg-gradient-to-r from-shockingly-green to-light-green transition-transform hover:scale-[1.02] active:scale-[0.98]"
               >
-                Download for Windows
+                <span className="flex items-center gap-2 px-8 py-5 rounded-[100px] bg-just-black text-[18px] font-semibold text-surface-cream group-hover:bg-transparent transition-colors duration-300">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+                  </svg>
+                  Download for Windows
+                </span>
               </a>
               <p className="text-[14px] text-surface-50 mt-4">v0.1.0 · Windows 10/11 x64 · 319 MB</p>
               <a

@@ -132,24 +132,74 @@ export function HeroGsap() {
 
         {/* CTAs */}
         <div className="flex flex-wrap items-center gap-5">
+          {/* 
+            Gradient-border pill button — wrapper approach:
+            Outer span = gradient background
+            Inner span = dark fill that becomes transparent on hover
+            Result: gradient border at rest → filled gradient on hover
+          */}
           <a
             href="https://github.com/Oxyrine/krypts-2.0/releases/download/v0.1.0/Krypts.DRM.Setup.0.1.0.exe"
-            className="hero-cta relative inline-flex items-center justify-center px-7 py-4 text-[17px] font-semibold text-surface-cream rounded-[100px] border-[1.5px] border-transparent bg-just-black bg-clip-padding before:absolute before:inset-0 before:-m-[1.5px] before:rounded-[100px] before:bg-gradient-to-r before:from-shockingly-green before:to-light-green before:-z-10 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+            className="hero-cta group relative inline-flex rounded-[100px] p-[1.5px] bg-gradient-to-r from-shockingly-green to-light-green transition-transform hover:scale-[1.02] active:scale-[0.98] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-shockingly-green"
           >
-            Get Krypts for Windows
+            <span className="flex items-center gap-2 px-7 py-4 rounded-[100px] bg-just-black text-[17px] font-semibold text-surface-cream group-hover:bg-transparent transition-colors duration-300">
+              {/* Down-arrow icon */}
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" />
+              </svg>
+              Get Krypts for Windows
+            </span>
           </a>
+
           <Link
             href="/dashboard"
-            className="hero-cta inline-flex items-center justify-center px-7 py-4 text-[17px] font-semibold text-surface-cream rounded-[100px] border border-surface-cream/60 hover:border-surface-cream hover:opacity-90 transition-all"
+            className="hero-cta inline-flex items-center justify-center px-7 py-4 text-[17px] font-semibold text-surface-cream rounded-[100px] border border-surface-cream/40 hover:border-surface-cream hover:bg-surface-cream/5 transition-all duration-300"
           >
-            View Dashboard
+            Try Web Dashboard
           </Link>
         </div>
 
         {/* Caption */}
-        <p className="hero-cta mt-6 text-[13px] text-surface-50">
+        <p className="hero-cta mt-5 text-[13px] text-surface-50">
           Free · No credit card · Windows 10/11 x64
         </p>
+
+        {/* ── Desktop vs Web advantage callout ── */}
+        <div className="hero-cta mt-14 w-full max-w-2xl rounded-2xl border border-surface-25 bg-off-black/60 backdrop-blur-sm p-6 flex flex-col sm:flex-row gap-6">
+          {/* Desktop side */}
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-shockingly-green" />
+              <span className="text-[13px] font-bold uppercase tracking-widest text-shockingly-green">Desktop App</span>
+              <span className="ml-1 text-[11px] font-semibold bg-shockingly-green/20 text-shockingly-green px-2 py-0.5 rounded-full">Recommended</span>
+            </div>
+            <ul className="space-y-1.5 text-[14px] text-surface-cream">
+              {["OS-level screenshot & recording block", "DevTools locked out", "Black screen in Zoom / OBS", "Offline DRM enforcement"].map(f => (
+                <li key={f} className="flex items-start gap-2">
+                  <span className="text-shockingly-green mt-0.5">✓</span>{f}
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Divider */}
+          <div className="hidden sm:block w-px bg-surface-25" />
+
+          {/* Web side */}
+          <div className="flex-1 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-surface-50" />
+              <span className="text-[13px] font-bold uppercase tracking-widest text-surface-50">Web Dashboard</span>
+            </div>
+            <ul className="space-y-1.5 text-[14px] text-surface-50">
+              {["Encryption & token management", "Watermarking controls", "Analytics & access logs", "No screenshot protection"].map((f, i) => (
+                <li key={f} className={`flex items-start gap-2 ${i === 3 ? 'line-through opacity-50' : ''}`}>
+                  <span className={i === 3 ? 'opacity-40' : ''}>{i === 3 ? '✗' : '○'}</span>{f}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
   );
