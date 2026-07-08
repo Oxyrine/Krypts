@@ -8,12 +8,16 @@ Krypts is a secure, plug-and-play Digital Rights Management (DRM) platform desig
 
 The project is built on a modern, decoupled architecture split into a React frontend and a Python backend:
 
-### Frontend
+### Frontend (Web Dashboard & Viewers)
 * **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
 * **Language**: TypeScript
-* **Styling**: Tailwind CSS & [shadcn/ui](https://ui.shadcn.com/)
-* **Animations**: Framer Motion
+* **Styling**: Tailwind CSS, [shadcn/ui](https://ui.shadcn.com/), GSAP Animations
 * **Deployment**: [Vercel](https://vercel.com/) (Connected via continuous deployment from the GitHub repository)
+
+### Native Desktop App (Screenshot Protection)
+* **Framework**: Electron.js wrapping the Next.js frontend
+* **Core Functionality**: Uses OS-level APIs (`SetWindowDisplayAffinity`) to completely block screen recorders (OBS, Zoom) and OS snipping tools (Win+Shift+S, Mac Screenshot) by rendering a black screen.
+* **Repository**: Maintained as a separate repository (`Oxyrine/krypts-2.0`) to keep the web build clean.
 
 ### Backend
 * **Framework**: [FastAPI](https://fastapi.tiangolo.com/) (Asynchronous Python)
