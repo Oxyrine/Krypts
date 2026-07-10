@@ -57,20 +57,21 @@ async def init_db() -> None:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
         
-        # Add newly added columns to existing users table if they don't exist
-        from sqlalchemy import text
-        for col, col_def in [
-            ("warning_count", "INTEGER DEFAULT 0"),
-            ("suspension_count", "INTEGER DEFAULT 0"),
-            ("rapid_session_count", "INTEGER DEFAULT 0"),
-            ("risk_score", "INTEGER DEFAULT 0"),
-            ("account_status", "VARCHAR DEFAULT 'active'")
-        ]:
-            try:
+    # Add newly added columns to existing users table if they don't exist
+    from sqlalchemy import text
+    for col, col_def in [
+        ("warning_count", "INTEGER DEFAULT 0"),
+        ("suspension_count", "INTEGER DEFAULT 0"),
+        ("rapid_session_count", "INTEGER DEFAULT 0"),
+        ("risk_score", "INTEGER DEFAULT 0"),
+        ("account_status", "VARCHAR DEFAULT 'active'")
+    ]:
+        try:
+            async with engine.begin() as conn:
                 await conn.execute(text(f"ALTER TABLE users ADD COLUMN {col} {col_def}"))
-            except Exception as e:
-                # Column likely already exists
-                pass
+        except Exception as e:
+            # Column likely already exists
+            pass
 
     # Seed admin account
     import uuid
