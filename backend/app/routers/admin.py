@@ -141,6 +141,7 @@ async def reactivate_user(
 
     user.account_status = AccountStatus.active
     user.rapid_session_count = 0
+    user.risk_score = 0
     await db.commit()
     return UserActionResponse(message="User reactivated.", user_id=user_id, new_status="active")
 

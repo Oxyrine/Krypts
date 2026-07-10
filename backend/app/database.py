@@ -56,3 +56,24 @@ async def init_db() -> None:
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+    # Seed admin account
+    import uuid
+    import secrets
+    from sqlalchemy import select
+    from app.models.user import User
+    from app.middleware.auth import hash_password
+    
+    async with AsyncSessionLocal() as session:
+        result = await session.execute(select(User).where(User.email == "admin@example.com"))
+        admin = result.scalar_one_or_none()
+        if not admin:
+            admin_user = User(
+                user_id=uuid.uuid4(),
+                email="admin@example.com",
+                full_name="System Admin",
+                password_hash=hash_password("password123"),
+                security_token=secrets.token_hex(32),
+            )
+            session.add(admin_user)
+            await session.commit()

@@ -106,3 +106,54 @@ async def security_events(
         )
         for a in alerts
     ]
+
+
+from pydantic import BaseModel
+
+class TelemetryEvent(BaseModel):
+    event_type: str
+    metadata: dict = {}
+
+@router.post("/telemetry", response_model=dict)
+async def submit_telemetry(
+    event: TelemetryEvent,
+    current_user=Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    from app.models.user import User, AccountStatus
+    from app.models.security_alert import SecurityAlert, AlertType
+
+    result = await db.execute(select(User).where(User.user_id == current_user.user_id))
+    user = result.scalar_one_or_none()
+    
+    if not user:
+        return {"status": "error", "detail": "User not found"}
+
+    score_increment = 0
+    alert_threshold = 80
+    
+    if event.event_type == "rapid_scrubbing":
+        score_increment = 10
+    elif event.event_type == "copy_attempt":
+        score_increment = 20
+    elif event.event_type == "dev_tools_opened":
+        score_increment = 50
+
+    if score_increment > 0:
+        user.risk_score += score_increment
+        
+        # If threshold crossed, auto-ban
+        if user.risk_score >= alert_threshold and user.account_status != AccountStatus.banned:
+            user.account_status = AccountStatus.banned
+            
+            alert = SecurityAlert(
+                user_id=user.user_id,
+                alert_type=AlertType.banned,
+                description=f"Auto-banned due to high risk score ({user.risk_score}): {event.event_type}",
+                ip_address=event.metadata.get("ip_address", "unknown")
+            )
+            db.add(alert)
+            
+        await db.commit()
+
+    return {"status": "ok", "new_score": user.risk_score, "banned": user.account_status == AccountStatus.banned}

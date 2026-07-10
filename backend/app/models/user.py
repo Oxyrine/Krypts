@@ -31,6 +31,7 @@ class User(Base):
     warning_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     suspension_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     rapid_session_count: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    risk_score: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
 
     last_login_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     created_at: Mapped[datetime] = mapped_column(

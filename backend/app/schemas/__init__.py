@@ -172,6 +172,7 @@ class AdminUserResponse(BaseModel):
     warning_count: int
     suspension_count: int
     rapid_session_count: int
+    risk_score: int
     security_token: str
     created_at: datetime
     last_login_time: Optional[datetime]
@@ -186,6 +187,7 @@ class AdminUserResponse(BaseModel):
             warning_count=user.warning_count,
             suspension_count=user.suspension_count,
             rapid_session_count=user.rapid_session_count,
+            risk_score=user.risk_score,
             security_token=user.security_token,
             created_at=user.created_at,
             last_login_time=user.last_login_time,
