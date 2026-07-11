@@ -147,6 +147,9 @@ class UsageAnalytics(BaseModel):
     blocked_attempts: int = 0
     bandwidth_saved_mb: float = 0.0
     recent_events: List[Dict[str, Any]] = []
+    auth_data: List[Dict[str, Any]] = []
+    content_data: List[Dict[str, Any]] = []
+    geo_data: List[Dict[str, Any]] = []
 
 
 class SecurityEventItem(BaseModel):

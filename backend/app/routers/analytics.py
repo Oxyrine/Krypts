@@ -50,8 +50,30 @@ async def usage_analytics(
         .limit(10)
     )
 
-    files_r, bw_r, events_r, failed_r, recent_r = await asyncio.gather(
-        files_q, bw_q, events_q, failed_q, recent_q
+    import datetime
+    seven_days_ago = datetime.datetime.now(timezone.utc) - datetime.timedelta(days=7)
+    logs_q = db.execute(
+        select(UserActivityLog)
+        .where(
+            UserActivityLog.user_id == uid,
+            UserActivityLog.timestamp >= seven_days_ago
+        )
+    )
+    types_q = db.execute(
+        select(ProtectedFile.file_type, func.count(ProtectedFile.file_id))
+        .where(ProtectedFile.owner_id == uid)
+        .group_by(ProtectedFile.file_type)
+    )
+    ips_q = db.execute(
+        select(UserActivityLog.ip_address, func.count(UserActivityLog.log_id))
+        .where(UserActivityLog.user_id == uid, UserActivityLog.ip_address.isnot(None))
+        .group_by(UserActivityLog.ip_address)
+        .order_by(func.count(UserActivityLog.log_id).desc())
+        .limit(5)
+    )
+
+    files_r, bw_r, events_r, failed_r, recent_r, logs_r, types_r, ips_r = await asyncio.gather(
+        files_q, bw_q, events_q, failed_q, recent_q, logs_q, types_q, ips_q
     )
 
     total_files = files_r.scalar() or 0
@@ -71,6 +93,65 @@ async def usage_analytics(
         for log in recent_logs
     ]
 
+    # Calculate auth_data for last 7 days
+    today = datetime.datetime.now(timezone.utc)
+    days_dict = {}
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        day_name = d.strftime("%a")
+        date_str = d.strftime("%Y-%m-%d")
+        days_dict[date_str] = {
+            "name": day_name,
+            "sessions": 0,
+            "blocked": 0
+        }
+
+    all_logs = logs_r.scalars().all()
+    for log in all_logs:
+        log_date = log.timestamp.strftime("%Y-%m-%d")
+        if log_date in days_dict:
+            if log.event_type == EventType.login:
+                days_dict[log_date]["sessions"] += 1
+            elif log.event_type == EventType.failure:
+                days_dict[log_date]["blocked"] += 1
+
+    auth_data = [days_dict[d] for d in sorted(days_dict.keys())]
+
+    # Calculate content_data
+    files_types = types_r.all()
+    type_map = {
+        "video": {"name": "Video", "color": "#ec4899"},
+        "pdf": {"name": "PDF", "color": "#3b82f6"},
+        "image": {"name": "Image", "color": "#10b981"}
+    }
+    
+    content_data = []
+    total_val = sum(item[1] for item in files_types)
+    for f_type, count in files_types:
+        f_type_lower = (f_type or "image").lower()
+        resolved = "image"
+        if "video" in f_type_lower or "mp4" in f_type_lower:
+            resolved = "video"
+        elif "pdf" in f_type_lower:
+            resolved = "pdf"
+            
+        cfg = type_map.get(resolved, type_map["image"])
+        percentage = round((count / total_val) * 100) if total_val > 0 else 0
+        
+        existing = next((x for x in content_data if x["name"] == cfg["name"]), None)
+        if existing:
+            existing["value"] += percentage
+        else:
+            content_data.append({
+                "name": cfg["name"],
+                "value": percentage,
+                "color": cfg["color"]
+            })
+
+    # Calculate geo_data (IP addresses)
+    ip_counts = ips_r.all()
+    geo_data = [{"name": item[0] if item[0] else "Unknown", "value": item[1]} for item in ip_counts]
+
     return UsageAnalytics(
         total_files=total_files,
         total_tokens_issued=total_access_events,
@@ -78,6 +159,9 @@ async def usage_analytics(
         blocked_attempts=blocked_attempts,
         bandwidth_saved_mb=bandwidth_saved_mb,
         recent_events=recent_events,
+        auth_data=auth_data,
+        content_data=content_data,
+        geo_data=geo_data
     )
 
 
