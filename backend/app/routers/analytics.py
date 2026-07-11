@@ -25,25 +25,25 @@ async def usage_analytics(
 ):
     uid = current_user.user_id
 
-    files_q = db.execute(
+    files_r = await db.execute(
         select(func.count(ProtectedFile.file_id)).where(ProtectedFile.owner_id == uid)
     )
-    bw_q = db.execute(
+    bw_r = await db.execute(
         select(func.sum(ProtectedFile.size_bytes)).where(ProtectedFile.owner_id == uid)
     )
-    events_q = db.execute(
+    events_r = await db.execute(
         select(func.count(UserActivityLog.log_id)).where(
             UserActivityLog.user_id == uid,
             UserActivityLog.event_type == EventType.login,
         )
     )
-    failed_q = db.execute(
+    failed_r = await db.execute(
         select(func.count(UserActivityLog.log_id)).where(
             UserActivityLog.user_id == uid,
             UserActivityLog.event_type == EventType.failure,
         )
     )
-    recent_q = db.execute(
+    recent_r = await db.execute(
         select(UserActivityLog)
         .where(UserActivityLog.user_id == uid)
         .order_by(UserActivityLog.timestamp.desc())
@@ -52,28 +52,24 @@ async def usage_analytics(
 
     import datetime
     seven_days_ago = datetime.datetime.now(timezone.utc) - datetime.timedelta(days=7)
-    logs_q = db.execute(
+    logs_r = await db.execute(
         select(UserActivityLog)
         .where(
             UserActivityLog.user_id == uid,
             UserActivityLog.timestamp >= seven_days_ago
         )
     )
-    types_q = db.execute(
+    types_r = await db.execute(
         select(ProtectedFile.file_type, func.count(ProtectedFile.file_id))
         .where(ProtectedFile.owner_id == uid)
         .group_by(ProtectedFile.file_type)
     )
-    ips_q = db.execute(
+    ips_r = await db.execute(
         select(UserActivityLog.ip_address, func.count(UserActivityLog.log_id))
         .where(UserActivityLog.user_id == uid, UserActivityLog.ip_address.isnot(None))
         .group_by(UserActivityLog.ip_address)
         .order_by(func.count(UserActivityLog.log_id).desc())
         .limit(5)
-    )
-
-    files_r, bw_r, events_r, failed_r, recent_r, logs_r, types_r, ips_r = await asyncio.gather(
-        files_q, bw_q, events_q, failed_q, recent_q, logs_q, types_q, ips_q
     )
 
     total_files = files_r.scalar() or 0
