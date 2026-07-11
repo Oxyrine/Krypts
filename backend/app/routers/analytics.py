@@ -2,7 +2,8 @@
 Analytics routes: usage statistics and security event history.
 """
 import asyncio
-from datetime import datetime, timezone
+from typing import List, Dict, Any
+from datetime import datetime, timezone, timedelta
 
 from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
@@ -50,8 +51,7 @@ async def usage_analytics(
         .limit(10)
     )
 
-    import datetime
-    seven_days_ago = datetime.datetime.now(timezone.utc) - datetime.timedelta(days=7)
+    seven_days_ago = datetime.now(timezone.utc).replace(tzinfo=None) - timedelta(days=7)
     logs_r = await db.execute(
         select(UserActivityLog)
         .where(
@@ -90,10 +90,10 @@ async def usage_analytics(
     ]
 
     # Calculate auth_data for last 7 days
-    today = datetime.datetime.now(timezone.utc)
+    today = datetime.now(timezone.utc)
     days_dict = {}
     for i in range(6, -1, -1):
-        d = today - datetime.timedelta(days=i)
+        d = today - timedelta(days=i)
         day_name = d.strftime("%a")
         date_str = d.strftime("%Y-%m-%d")
         days_dict[date_str] = {
