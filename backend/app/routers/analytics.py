@@ -60,9 +60,9 @@ async def usage_analytics(
         )
     )
     types_r = await db.execute(
-        select(ProtectedFile.file_type, func.count(ProtectedFile.file_id))
+        select(ProtectedFile.content_type, func.count(ProtectedFile.file_id))
         .where(ProtectedFile.owner_id == uid)
-        .group_by(ProtectedFile.file_type)
+        .group_by(ProtectedFile.content_type)
     )
     ips_r = await db.execute(
         select(UserActivityLog.ip_address, func.count(UserActivityLog.log_id))
@@ -125,13 +125,14 @@ async def usage_analytics(
     total_val = sum(item[1] for item in files_types)
     for f_type, count in files_types:
         f_type_lower = (f_type or "image").lower()
-        resolved = "image"
-        if "video" in f_type_lower or "mp4" in f_type_lower:
-            resolved = "video"
+        if "video" in f_type_lower:
+            cat = "video"
         elif "pdf" in f_type_lower:
-            resolved = "pdf"
+            cat = "pdf"
+        else:
+            cat = "image"
             
-        cfg = type_map.get(resolved, type_map["image"])
+        cfg = type_map[cat]
         percentage = round((count / total_val) * 100) if total_val > 0 else 0
         
         existing = next((x for x in content_data if x["name"] == cfg["name"]), None)
