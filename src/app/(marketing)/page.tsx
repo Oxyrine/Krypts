@@ -4,6 +4,7 @@ import { SolutionSection } from "@/components/marketing/solution"
 import { FeaturesSection } from "@/components/marketing/features"
 import { UseCasesSection } from "@/components/marketing/use-cases"
 import { IntegrationSection } from "@/components/marketing/integration"
+import { UpdatesSection } from "@/components/marketing/updates"
 import PricingSection from "@/components/ui/pricing-section-4"
 import { ScrollReveal } from "@/components/ui/scroll-reveal"
 import Link from "next/link"
@@ -93,6 +94,10 @@ export default function LandingPage() {
             
           </div>
         </section>
+      </ScrollReveal>
+
+      <ScrollReveal delay={50}>
+        <UpdatesSection />
       </ScrollReveal>
 
       <PricingSection />

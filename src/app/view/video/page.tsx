@@ -8,65 +8,26 @@ import { Button } from "@/components/ui/button"
 
 const STORAGE_KEY = "krypts_watermark_settings"
 
-function getWatermarkSettings() {
-  try {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) return JSON.parse(stored)
-  } catch { /* ignore */ }
-  return { enabled: true, text: "Confidential - {user_id}", opacity: [15], density: [3], colorScheme: "light" }
-}
-
-function FloatingWatermark({ email }: { email: string }) {
-  const [positions, setPositions] = useState<{ top: number; left: number }[]>([])
-  const [settings, setSettings] = useState(getWatermarkSettings)
-
-  useEffect(() => {
-    setSettings(getWatermarkSettings())
-  }, [])
-
-  const count = Math.max(2, settings.density[0] * 2)
-  const opacityValue = settings.opacity[0] / 100
-
-  const generatePositions = useCallback(() => {
-    return Array.from({ length: count }, () => ({
-      top: 5 + Math.random() * 80,
-      left: 5 + Math.random() * 75,
-    }))
-  }, [count])
-
-  useEffect(() => {
-    setPositions(generatePositions())
-    const interval = setInterval(() => setPositions(generatePositions()), 3000)
-    return () => clearInterval(interval)
-  }, [generatePositions])
-
-  if (!settings.enabled) return null
-
-  const displayText = settings.text
-    .replace("{user_id}", email.split("@")[0])
-    .replace("{email}", email)
-    .replace("{ip_address}", "")
-    .replace("{timestamp}", new Date().toISOString().split("T")[0])
-
-  const textColor = settings.colorScheme === "dark" ? "0,0,0" : "255,255,255"
+function InvisibleWatermark({ email }: { email: string }) {
+  const displayText = email + " | " + Date.now().toString(36) + " | ";
+  // Create a very long string to completely fill the screen
+  const gridText = Array(3000).fill(displayText).join("");
 
   return (
-    <div className="absolute inset-0 pointer-events-none z-20 overflow-hidden">
-      {positions.map((pos, i) => (
-        <span
-          key={i}
-          className="absolute font-mono font-bold text-sm whitespace-nowrap select-none"
-          style={{
-            top: `${pos.top}%`,
-            left: `${pos.left}%`,
-            transform: `rotate(-${20 + i * 5}deg)`,
-            transition: "top 2s ease-in-out, left 2s ease-in-out",
-            color: `rgba(${textColor}, ${opacityValue})`,
-          }}
-        >
-          {displayText} • Krypts DRM
-        </span>
-      ))}
+    <div 
+      className="absolute inset-0 pointer-events-none z-20 overflow-hidden break-all"
+      style={{
+        opacity: 0.02,
+        mixBlendMode: 'difference',
+        color: '#ffffff',
+        fontSize: '12px',
+        lineHeight: '12px',
+        fontFamily: 'monospace',
+        fontWeight: 'bold',
+        userSelect: 'none'
+      }}
+    >
+      {gridText}
     </div>
   )
 }
@@ -77,15 +38,10 @@ function VideoViewerInner() {
   const fileId = searchParams.get("file_id") || ""
   const [userEmail, setUserEmail] = useState<string>("")
   const [canDownload, setCanDownload] = useState(false)
-  const [isDesktop, setIsDesktop] = useState(true)
 
   useEffect(() => {
     setUserEmail(localStorage.getItem("krypts_user_email") || "")
     api.auth.me().then((u) => setUserEmail(u.email)).catch(() => {})
-  }, [])
-
-  useEffect(() => {
-    setIsDesktop(typeof window !== "undefined" && !!(window as any).kryptsDesktop)
   }, [])
 
   useEffect(() => {
@@ -134,12 +90,6 @@ function VideoViewerInner() {
     document.body.removeChild(link)
   }
 
-  // Enforce Desktop App only
-  if (!isDesktop) {
-    const { DesktopBlocker } = require("@/components/layout/desktop-blocker")
-    return <DesktopBlocker />
-  }
-
   if (!token || !fileId) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-zinc-900">
@@ -180,8 +130,8 @@ function VideoViewerInner() {
       </div>
 
       <div className="flex-1 flex items-center justify-center p-6">
-        <div className="relative w-full max-w-4xl">
-          {userEmail && <FloatingWatermark email={userEmail} />}
+        <div className="relative w-full max-w-4xl bg-black rounded-xl overflow-hidden">
+          {userEmail && <InvisibleWatermark email={userEmail} />}
           <video
             src={videoUrl}
             controls

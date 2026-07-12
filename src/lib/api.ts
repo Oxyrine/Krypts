@@ -26,6 +26,7 @@ export interface UserResponse {
   security_token: string;
   created_at: string;
   last_login_time?: string;
+  is_admin?: boolean;
 }
 
 export interface FileUploadResponse {
@@ -80,6 +81,9 @@ export interface UsageAnalytics {
     timestamp: string;
     ip_address?: string;
   }>;
+  auth_data?: Array<Record<string, any>>;
+  content_data?: Array<Record<string, any>>;
+  geo_data?: Array<Record<string, any>>;
 }
 
 export interface SecurityEventItem {
@@ -102,6 +106,7 @@ export interface AdminUserResponse {
   security_token: string;
   created_at: string;
   last_login_time?: string;
+  risk_score: number;
 }
 
 export interface ActivityLogResponse {
@@ -122,6 +127,43 @@ export interface SecurityAlertResponse {
   timestamp: string;
   status: string;
   ip_address?: string;
+}
+
+export interface GroupResponse {
+  group_id: string;
+  owner_id: string;
+  name: string;
+  description?: string;
+  member_count: number;
+}
+
+export interface InboxItem {
+  share_id: string;
+  file_id: string;
+  filename: string;
+  content_type: string;
+  shared_by_name: string;
+  shared_by_email: string;
+  shared_at: string;
+  access_token: string;
+}
+
+export interface GroupInviteResponse {
+  invite_id: string;
+  group_id: string;
+  group_name: string;
+  invited_by_name: string;
+  invited_by_email: string;
+  created_at: string;
+  status: string;
+}
+
+export interface GroupMemberResponse {
+  user_id: string;
+  email: string;
+  full_name?: string;
+  role: string;
+  joined_at: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -224,6 +266,11 @@ export const api = {
     usage: () => apiFetch<UsageAnalytics>("/analytics/usage"),
     securityEvents: (limit = 20) =>
       apiFetch<SecurityEventItem[]>(`/analytics/security-events?limit=${limit}`),
+    submitTelemetry: (eventType: string, data: Record<string, any>) =>
+      apiFetch("/analytics/telemetry", {
+        method: "POST",
+        body: JSON.stringify({ event_type: eventType, data }),
+      }),
   },
 
   apiKeys: {
@@ -265,6 +312,43 @@ export const api = {
         method: "PATCH",
         body: JSON.stringify({ status: "read" }),
       }),
+  },
+
+  groups: {
+    list: () => apiFetch<GroupResponse[]>("/groups"),
+    create: (name: string, description?: string) =>
+      apiFetch<GroupResponse>("/groups", {
+        method: "POST",
+        body: JSON.stringify({ name, description }),
+      }),
+    inviteMember: (groupId: string, email: string) =>
+      apiFetch(`/groups/${groupId}/invite`, {
+        method: "POST",
+        body: JSON.stringify({ email }),
+      }),
+    getMembers: (groupId: string) =>
+      apiFetch<GroupMemberResponse[]>(`/groups/${groupId}/members`),
+  },
+
+  inbox: {
+    list: () => apiFetch<InboxItem[]>("/inbox"),
+    share: (fileId: string, targetEmail?: string, targetGroupId?: string) =>
+      apiFetch("/inbox/share", {
+        method: "POST",
+        body: JSON.stringify({
+          file_id: fileId,
+          target_email: targetEmail,
+          target_group_id: targetGroupId,
+        }),
+      }),
+  },
+
+  invites: {
+    list: () => apiFetch<GroupInviteResponse[]>("/invites"),
+    accept: (inviteId: string) =>
+      apiFetch(`/invites/${inviteId}/accept`, { method: "POST" }),
+    reject: (inviteId: string) =>
+      apiFetch(`/invites/${inviteId}/reject`, { method: "POST" }),
   },
 };
 

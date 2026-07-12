@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.database import init_db
 from app.middleware.rate_limiter import RateLimiterMiddleware
-from app.routers import admin, analytics, apikeys, auth, content, files, tokens
+from app.routers import admin, analytics, apikeys, auth, content, files, tokens, groups, inbox, invites
 
 
 @asynccontextmanager
@@ -37,7 +37,7 @@ app = FastAPI(
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r"https?://.*",
+    allow_origin_regex=r".*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -56,6 +56,9 @@ app.include_router(content.router, tags=["Secure Content"])
 app.include_router(analytics.router, prefix="/analytics", tags=["Analytics"])
 app.include_router(apikeys.router, prefix="/apikey", tags=["API Keys"])
 app.include_router(admin.router, prefix="/admin", tags=["Admin"])
+app.include_router(groups.router, prefix="/groups", tags=["Groups"])
+app.include_router(inbox.router, prefix="/inbox", tags=["Inbox"])
+app.include_router(invites.router, prefix="/invites", tags=["Invites"])
 
 
 # ---------------------------------------------------------------------------

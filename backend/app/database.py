@@ -53,6 +53,8 @@ async def init_db() -> None:
     import app.models.security_alert  # noqa: F401
     import app.models.protected_file  # noqa: F401
     import app.models.api_key  # noqa: F401
+    import app.models.groups  # noqa: F401
+    import app.models.file_share  # noqa: F401
 
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)

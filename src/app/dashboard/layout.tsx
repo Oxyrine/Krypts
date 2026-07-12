@@ -4,7 +4,7 @@ import Link from "next/link"
 import { usePathname, useRouter } from "next/navigation"
 import {
   LayoutDashboard, Upload, FileStack, Key, ShieldPlus,
-  Activity, Settings, Shield, Bell, LogOut, ChevronDown, ShieldAlert
+  Activity, Settings, Shield, Bell, LogOut, ChevronDown, ShieldAlert, Inbox, Users, ScanSearch
 } from "lucide-react"
 
 import { ModeToggle } from "@/components/mode-toggle"
@@ -19,15 +19,19 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const { user, logout } = useAuth()
 
   const navItems = [
-    { title: "Overview",           href: "/dashboard",            icon: LayoutDashboard },
-    { title: "Upload Content",     href: "/dashboard/upload",     icon: Upload },
-    { title: "Content Manager",    href: "/dashboard/content",    icon: FileStack },
-    { title: "Token Generator",    href: "/dashboard/tokens",     icon: Key },
-    { title: "Watermark Settings", href: "/dashboard/watermarks", icon: ShieldPlus },
-    { title: "Analytics",          href: "/dashboard/analytics",  icon: Activity },
-    { title: "API Keys",           href: "/dashboard/apikeys",    icon: Settings },
-    { title: "Admin Panel",        href: "/dashboard/admin",      icon: ShieldAlert },
-  ]
+    { title: "Overview",           href: "/dashboard",            icon: LayoutDashboard, adminOnly: false },
+    { title: "Inbox",              href: "/dashboard/inbox",      icon: Inbox,           adminOnly: false },
+    { title: "Groups",             href: "/dashboard/groups",     icon: Users,           adminOnly: false },
+    { title: "Upload Content",     href: "/dashboard/upload",     icon: Upload,          adminOnly: false },
+    { title: "Content Manager",    href: "/dashboard/content",    icon: FileStack,       adminOnly: false },
+    { title: "Token Generator",    href: "/dashboard/tokens",     icon: Key,             adminOnly: false },
+    { title: "Watermark Settings", href: "/dashboard/watermarks", icon: ShieldPlus,      adminOnly: false },
+    { title: "Forensic Scanner",   href: "/dashboard/scanner",    icon: ScanSearch,      adminOnly: true },
+    { title: "Analytics",          href: "/dashboard/analytics",  icon: Activity,        adminOnly: false },
+    { title: "API Keys",           href: "/dashboard/apikeys",    icon: Settings,        adminOnly: false },
+    { title: "Admin Panel",        href: "/dashboard/admin",      icon: ShieldAlert,     adminOnly: true },
+  ].filter(item => !item.adminOnly || user?.is_admin)
+
 
   const handleLogout = () => {
     logout()

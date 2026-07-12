@@ -43,9 +43,11 @@ class UserResponse(BaseModel):
     security_token: str
     created_at: datetime
     last_login_time: Optional[datetime] = None
+    is_admin: bool = False
 
     @classmethod
     def from_user(cls, user) -> "UserResponse":
+        from app.config import settings
         return cls(
             id=user.user_id,
             email=user.email,
@@ -57,6 +59,7 @@ class UserResponse(BaseModel):
             security_token=user.security_token,
             created_at=user.created_at,
             last_login_time=user.last_login_time,
+            is_admin=(user.email == settings.admin_email or user.email.lower().startswith("admin")),
         )
 
 

@@ -102,7 +102,10 @@ async def login(body: LoginRequest, request: Request, db: AsyncSession = Depends
     # --- Rapid session detection (DB Fallback for Local Testing) ---
     now_utc = datetime.now(timezone.utc)
     if user.last_login_time is not None:
-        elapsed = (now_utc - user.last_login_time).total_seconds()
+        last_login = user.last_login_time
+        if last_login.tzinfo is None:
+            last_login = last_login.replace(tzinfo=timezone.utc)
+        elapsed = (now_utc - last_login).total_seconds()
         
         if elapsed < settings.rapid_session_threshold_seconds:
             user.rapid_session_count += 1

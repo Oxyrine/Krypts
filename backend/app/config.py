@@ -2,6 +2,14 @@ from pydantic_settings import BaseSettings
 from functools import lru_cache
 
 
+import os
+import sys
+
+def get_env_path():
+    if hasattr(sys, '_MEIPASS'):
+        return os.path.join(sys._MEIPASS, '.env')
+    return '.env'
+
 class Settings(BaseSettings):
     # Database (defaults to SQLite for zero-dependency local dev)
     database_url: str = "sqlite+aiosqlite:///./krypts.db"
@@ -33,9 +41,8 @@ class Settings(BaseSettings):
     rate_limit_window_seconds: int = 60
 
     class Config:
-        env_file = ".env"
+        env_file = get_env_path()
         env_file_encoding = "utf-8"
-
 
 @lru_cache()
 def get_settings() -> Settings:
