@@ -2,12 +2,12 @@ import asyncio
 import httpx
 
 async def test_group_files():
-    async with httpx.AsyncClient(base_url="http://localhost:8001") as client:
+    async with httpx.AsyncClient(base_url="http://localhost:8000") as client:
         # Create a user to test with
-        res = await client.post("/auth/signup", json={"email": "testfiles@test.com", "password": "password", "full_name": "Test Files"})
+        res = await client.post("/auth/signup", json={"email": "testfiles9@test.com", "password": "password", "full_name": "Test Files"})
         
         # Login
-        res = await client.post("/auth/login", json={"email": "testfiles@test.com", "password": "password"})
+        res = await client.post("/auth/login", json={"email": "testfiles9@test.com", "password": "password"})
         if res.status_code != 200:
             print("Login failed:", res.text)
             return

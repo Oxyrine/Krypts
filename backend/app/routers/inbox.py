@@ -43,7 +43,7 @@ def generate_short_lived_token(file_id: uuid.UUID, user_email: str) -> str:
         "exp": datetime.utcnow() + timedelta(hours=24), # 24 hour token
         "permissions": {"stream": True, "download": False}
     }
-    return jwt.encode(payload, settings.secret_key, algorithm="HS256")
+    return jwt.encode(payload, settings.jwt_secret_key, algorithm="HS256")
 
 
 @router.post("/share")

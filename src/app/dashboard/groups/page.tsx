@@ -30,6 +30,12 @@ export default function GroupsPage() {
   const [activeMembersGroupId, setActiveMembersGroupId] = useState<string | null>(null)
   const [groupMembers, setGroupMembers] = useState<any[]>([])
   const [loadingMembers, setLoadingMembers] = useState(false)
+  const [membersError, setMembersError] = useState("")
+
+  const [activeFilesGroupId, setActiveFilesGroupId] = useState<string | null>(null)
+  const [groupFiles, setGroupFiles] = useState<any[]>([])
+  const [loadingFiles, setLoadingFiles] = useState(false)
+  const [filesError, setFilesError] = useState("")
 
   useEffect(() => {
     fetchGroups()
@@ -46,8 +52,11 @@ export default function GroupsPage() {
     }
   }
 
+  const [createError, setCreateError] = useState("")
+
   const handleCreateGroup = async () => {
     if (!newGroupName) return
+    setCreateError("")
     try {
       await api.groups.create(newGroupName, newGroupDesc)
       setIsCreateOpen(false)
@@ -56,33 +65,54 @@ export default function GroupsPage() {
       fetchGroups()
     } catch (err: any) {
       console.error(err)
-      alert("Failed to create group: " + (err.message || String(err)))
+      setCreateError(err.message || String(err))
     }
   }
 
+  const [inviteError, setInviteError] = useState("")
+  const [inviteSuccess, setInviteSuccess] = useState("")
+
   const handleInvite = async (groupId: string) => {
     if (!inviteEmail) return
+    setInviteError("")
+    setInviteSuccess("")
     try {
       await api.groups.inviteMember(groupId, inviteEmail)
       setInviteEmail("")
-      setActiveInviteGroupId(null)
-      alert("User invited successfully! They must accept the invite in their inbox.")
+      setInviteSuccess("User invited successfully! They must accept the invite in their inbox.")
+      setTimeout(() => setInviteSuccess(""), 5000)
     } catch (err: any) {
-      alert(err.message || "Failed to invite user")
+      setInviteError(err.message || "Failed to invite user")
     }
   }
 
   const handleViewMembers = async (groupId: string) => {
     setActiveMembersGroupId(groupId)
     setLoadingMembers(true)
+    setMembersError("")
     try {
       const members = await api.groups.getMembers(groupId)
       setGroupMembers(members)
     } catch (err: any) {
       console.error(err)
-      alert(err.message || "Failed to fetch members")
+      setMembersError(err.message || "Failed to fetch members")
     } finally {
       setLoadingMembers(false)
+    }
+  }
+
+  const handleViewFiles = async (groupId: string) => {
+    setActiveFilesGroupId(groupId)
+    setLoadingFiles(true)
+    setFilesError("")
+    try {
+      const files = await api.groups.getFiles(groupId)
+      setGroupFiles(files)
+    } catch (err: any) {
+      console.error(err)
+      setFilesError(err.message || "Failed to fetch files")
+    } finally {
+      setLoadingFiles(false)
     }
   }
 
@@ -97,11 +127,9 @@ export default function GroupsPage() {
         </div>
         
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
-          <DialogTrigger>
-            <Button>
-              <Plus className="mr-2 h-4 w-4" />
-              Create Group
-            </Button>
+          <DialogTrigger render={<Button />}>
+            <Plus className="mr-2 h-4 w-4" />
+            Create Group
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
@@ -129,6 +157,9 @@ export default function GroupsPage() {
                   onChange={(e) => setNewGroupDesc(e.target.value)}
                 />
               </div>
+              {createError && (
+                <p className="text-sm text-destructive">{createError}</p>
+              )}
             </div>
             <DialogFooter>
               <Button onClick={handleCreateGroup}>Create Group</Button>
@@ -168,22 +199,29 @@ export default function GroupsPage() {
                   <strong>{group.member_count}</strong> members
                 </p>
               </CardContent>
-              <CardFooter className="bg-muted/50 pt-4 flex gap-2">
-                <Button 
-                  variant="outline" 
-                  className="w-full"
-                  onClick={() => handleViewMembers(group.group_id)}
-                >
-                  <Users className="mr-2 h-4 w-4" />
-                  Members
-                </Button>
+              <CardFooter className="bg-muted/50 pt-4 flex flex-col gap-2 w-full">
+                <div className="flex gap-2 w-full">
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => handleViewMembers(group.group_id)}
+                  >
+                    Members
+                  </Button>
+                  
+                  <Button 
+                    variant="outline" 
+                    className="flex-1"
+                    onClick={() => handleViewFiles(group.group_id)}
+                  >
+                    Files
+                  </Button>
+                </div>
                 
                 <Dialog open={activeInviteGroupId === group.group_id} onOpenChange={(open) => setActiveInviteGroupId(open ? group.group_id : null)}>
-                  <DialogTrigger asChild>
-                    <Button variant="secondary" className="w-full">
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Invite
-                    </Button>
+                  <DialogTrigger render={<Button variant="secondary" className="w-full" />}>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Invite Member
                   </DialogTrigger>
                   <DialogContent>
                     <DialogHeader>
@@ -199,6 +237,8 @@ export default function GroupsPage() {
                         value={inviteEmail}
                         onChange={(e) => setInviteEmail(e.target.value)}
                       />
+                      {inviteError && <p className="text-sm text-destructive mt-2">{inviteError}</p>}
+                      {inviteSuccess && <p className="text-sm text-green-600 mt-2">{inviteSuccess}</p>}
                     </div>
                     <DialogFooter>
                       <Button onClick={() => handleInvite(group.group_id)}>Send Invite</Button>
@@ -225,6 +265,8 @@ export default function GroupsPage() {
               <div className="flex justify-center p-4">
                 <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
               </div>
+            ) : membersError ? (
+              <p className="text-sm text-destructive text-center">{membersError}</p>
             ) : groupMembers.length === 0 ? (
               <p className="text-sm text-muted-foreground text-center">No members found.</p>
             ) : (
@@ -243,6 +285,44 @@ export default function GroupsPage() {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setActiveMembersGroupId(null)}>Close</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* View Files Dialog */}
+      <Dialog open={activeFilesGroupId !== null} onOpenChange={(open) => !open && setActiveFilesGroupId(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Shared Files</DialogTitle>
+            <DialogDescription>
+              Files shared securely with this group.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+            {loadingFiles ? (
+              <div className="flex justify-center p-4">
+                <div className="h-6 w-6 animate-spin rounded-full border-b-2 border-primary"></div>
+              </div>
+            ) : filesError ? (
+              <p className="text-sm text-destructive text-center">{filesError}</p>
+            ) : groupFiles.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center">No files shared yet.</p>
+            ) : (
+              groupFiles.map(file => (
+                <div key={file.share_id} className="flex items-center justify-between border-b pb-2 last:border-0 last:pb-0">
+                  <div>
+                    <p className="font-medium text-sm">{file.filename}</p>
+                    <p className="text-xs text-muted-foreground">Shared by {file.shared_by_email}</p>
+                  </div>
+                  <div className="text-xs text-muted-foreground border px-2 py-1 rounded">
+                    {file.content_type.split('/')[0]}
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setActiveFilesGroupId(null)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

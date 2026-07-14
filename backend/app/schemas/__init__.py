@@ -59,7 +59,7 @@ class UserResponse(BaseModel):
             security_token=user.security_token,
             created_at=user.created_at,
             last_login_time=user.last_login_time,
-            is_admin=(user.email == settings.admin_email or user.email.lower().startswith("admin")),
+            is_admin=(user.email == settings.admin_email),
         )
 
 

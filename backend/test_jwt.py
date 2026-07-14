@@ -1,0 +1,1 @@
+import sys; sys.path.append('c:\\Documents\\Hackathon\\drm-platform\\backend'); from app.routers.inbox import generate_short_lived_token; import uuid; print(generate_short_lived_token(uuid.uuid4(), 'test@test.com'))  

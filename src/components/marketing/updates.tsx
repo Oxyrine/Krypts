@@ -6,6 +6,12 @@ import { CheckCircle2 } from "lucide-react"
 export function UpdatesSection() {
   const updates = [
     {
+      version: "v1.6",
+      date: "July 2026",
+      title: "UI Polishing & Stability",
+      description: "Fixed group members and file viewer UI, resolved pointer-event locks after logout, and improved admin panel visibility.",
+    },
+    {
       version: "v1.5",
       date: "July 2026",
       title: "Content Groups & Inbox",
