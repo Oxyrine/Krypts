@@ -40,6 +40,7 @@ def generate_short_lived_token(file_id: uuid.UUID, user_email: str) -> str:
     payload = {
         "sub": user_email,
         "file_id": str(file_id),
+        "type": "content_access",
         "exp": datetime.utcnow() + timedelta(hours=24), # 24 hour token
         "permissions": {"stream": True, "download": False}
     }
