@@ -242,3 +242,35 @@ async def list_group_files(
             "access_token": token,
         })
     return resp
+
+@router.delete("/{group_id}/files/{share_id}")
+async def delete_group_file(
+    group_id: uuid.UUID,
+    share_id: uuid.UUID,
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(get_current_user),
+):
+    from app.models.file_share import FileShare
+    
+    # Fetch the share
+    stmt = select(FileShare).where(
+        FileShare.share_id == share_id,
+        FileShare.target_group_id == group_id
+    )
+    share = (await db.execute(stmt)).scalar_one_or_none()
+    
+    if not share:
+        raise HTTPException(status_code=404, detail="File share not found in this group")
+        
+    # Only the person who shared it (or group owner) can delete it
+    if str(share.shared_by_id) != str(current_user.user_id):
+        # Check if group owner
+        g_stmt = select(Group).where(Group.group_id == group_id)
+        group = (await db.execute(g_stmt)).scalar_one_or_none()
+        if not group or str(group.owner_id) != str(current_user.user_id):
+            raise HTTPException(status_code=403, detail="Not authorized to delete this file share")
+            
+    await db.delete(share)
+    await db.commit()
+    
+    return {"status": "success"}
