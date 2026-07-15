@@ -1,6 +1,6 @@
 import uuid
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from jose import jwt
 
 from pydantic import BaseModel
@@ -41,10 +41,10 @@ def generate_short_lived_token(file_id: uuid.UUID, user_email: str) -> str:
         "sub": user_email,
         "file_id": str(file_id),
         "type": "content_access",
-        "exp": datetime.utcnow() + timedelta(hours=24), # 24 hour token
+        "exp": datetime.now(timezone.utc) + timedelta(hours=24),  # 24-hour token
         "permissions": {"stream": True, "download": False}
     }
-    return jwt.encode(payload, settings.jwt_secret_key, algorithm="HS256")
+    return jwt.encode(payload, settings.get_content_token_secret(), algorithm="HS256")
 
 
 @router.post("/share")

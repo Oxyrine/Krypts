@@ -1,10 +1,12 @@
 """
 Krypts DRM Platform — FastAPI application entry point.
 """
+import os
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from app.config import settings
 from app.database import init_db
@@ -19,6 +21,11 @@ async def lifespan(app: FastAPI):
     yield
 
 
+# ---------------------------------------------------------------------------
+# API docs: only expose in development mode
+# ---------------------------------------------------------------------------
+_expose_docs = os.getenv("KRYPTS_ENV", "production").lower() in ("dev", "development", "local")
+
 app = FastAPI(
     title="Krypts DRM API",
     description=(
@@ -27,23 +34,49 @@ app = FastAPI(
     ),
     version="1.0.0",
     lifespan=lifespan,
-    docs_url="/docs",
-    redoc_url="/redoc",
+    docs_url="/docs" if _expose_docs else None,
+    redoc_url="/redoc" if _expose_docs else None,
 )
 
 # ---------------------------------------------------------------------------
 # Middleware
 # ---------------------------------------------------------------------------
 
+# CORS — allow only the Electron renderer and localhost dev server.
+# The krypts:// protocol uses null origin in some Electron versions; we allow
+# the localhost wildcard only.  Tighten further before deploying publicly.
+_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+_ALLOWED_ORIGIN_REGEX = r"^http://127\.0\.0\.1(:\d+)?$"
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origin_regex=r".*",
+    allow_origins=_ALLOWED_ORIGINS,
+    allow_origin_regex=_ALLOWED_ORIGIN_REGEX,
     allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
+    allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers=["Authorization", "Content-Type", "Accept"],
 )
 
 app.add_middleware(RateLimiterMiddleware)
+
+
+# ---------------------------------------------------------------------------
+# Security response headers middleware
+# ---------------------------------------------------------------------------
+
+@app.middleware("http")
+async def add_security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Cache-Control"] = "no-store"
+    return response
+
 
 # ---------------------------------------------------------------------------
 # Routers

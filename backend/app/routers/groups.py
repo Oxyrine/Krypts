@@ -196,7 +196,6 @@ class GroupFileResponse(BaseModel):
     content_type: str
     shared_by_email: str
     shared_at: datetime
-    access_token: str
 
 @router.get("/{group_id}/files", response_model=List[GroupFileResponse])
 async def list_group_files(
@@ -206,7 +205,6 @@ async def list_group_files(
 ):
     from app.models.file_share import FileShare
     from app.models.protected_file import ProtectedFile
-    from app.routers.inbox import generate_short_lived_token
     
     # Verify group membership
     g_stmt = select(Group).where(Group.group_id == group_id)
@@ -231,7 +229,6 @@ async def list_group_files(
     
     resp = []
     for share, file, user in rows:
-        token = generate_short_lived_token(file.file_id, current_user.email)
         resp.append({
             "share_id": share.share_id,
             "file_id": file.file_id,
@@ -239,7 +236,6 @@ async def list_group_files(
             "content_type": file.content_type,
             "shared_by_email": user.email,
             "shared_at": share.created_at,
-            "access_token": token,
         })
     return resp
 

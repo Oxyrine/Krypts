@@ -9,10 +9,12 @@ from app.database import Base
 
 
 class EventType(str, enum.Enum):
+    signup = "signup"
     login = "login"
     logout = "logout"
     failure = "failure"
     expired = "expired"
+
 
 
 class UserActivityLog(Base):

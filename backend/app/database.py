@@ -86,11 +86,21 @@ async def init_db() -> None:
         result = await session.execute(select(User).where(User.email == "admin@example.com"))
         admin = result.scalar_one_or_none()
         if not admin:
+            # Generate a secure random password and print it once to console.
+            # The operator must save this password; it will NOT be shown again.
+            admin_password = secrets.token_urlsafe(16)
+            print("\n" + "="*60, flush=True)
+            print("[ADMIN ACCOUNT CREATED]", flush=True)
+            print(f"  Email:    admin@example.com", flush=True)
+            print(f"  Password: {admin_password}", flush=True)
+            print("  SAVE THIS PASSWORD — it will NOT be shown again.", flush=True)
+            print("="*60 + "\n", flush=True)
+
             admin_user = User(
                 user_id=uuid.uuid4(),
                 email="admin@example.com",
                 full_name="System Admin",
-                password_hash=hash_password("password123"),
+                password_hash=hash_password(admin_password),
                 security_token=secrets.token_hex(32),
             )
             session.add(admin_user)
